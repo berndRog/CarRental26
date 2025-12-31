@@ -4,41 +4,39 @@ namespace CarRentalApi.Domain;
 // Nicht-generisches Result für Operationen ohne Rückgabewert
 public readonly struct Result {
    
-   public bool IsSuccess { get; }
-   public bool IsFailure => !IsSuccess;
-   public DomainErrors? Error { get; }
+   public bool IsFailure { get; }
+   public bool IsSuccess => !IsFailure;
+   public DomainErrors Error { get; }
 
-   private Result(bool isSuccess, DomainErrors? error = null) {
-      IsSuccess = isSuccess;
+   private Result(bool isFailure, DomainErrors error) {
+      IsFailure = isFailure;
       Error = error;
    }
 
-   public static Result Success() => new(true);
-   public static Result Failure(DomainErrors error) => new(false, error);
+   public static Result Success() => new(false, DomainErrors.None);
+   public static Result Failure(DomainErrors error) => new(true, error);
 }
 
 // Generisches Result<T>:  Echte binäres Zustände
-public readonly struct Result<T> {
+public sealed class Result<T> {
    
-   public bool IsSuccess { get; }
-   public bool IsFailure => !IsSuccess;
-   public T? Value { get; }
-   public DomainErrors? Error { get; }
+   public bool IsFailure { get; }
+   public bool IsSuccess => !IsFailure;
 
-   private Result(T value) {
-      IsSuccess = true;
+   public DomainErrors Error { get; }
+   public T Value { get; }
+
+   private Result(bool isFailure, T value, DomainErrors error) {
+      IsFailure = isFailure;
       Value = value;
-      Error = null;
-   }
-
-   private Result(DomainErrors error) {
-      IsSuccess = false;
-      Value = default;
       Error = error;
    }
 
-   public static Result<T> Success(T value) => new(value);
-   public static Result<T> Failure(DomainErrors errors) => new(errors);
+   public static Result<T> Success(T value) =>
+      new(false, value, DomainErrors.None);
+
+   public static Result<T> Failure(DomainErrors error) =>
+      new(true, default!, error);
    
    public T GetValueOrDefault(T defaultValue = default!) {
       return IsSuccess && Value is not null ? Value : defaultValue;

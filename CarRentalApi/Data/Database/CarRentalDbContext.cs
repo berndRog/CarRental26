@@ -6,6 +6,9 @@ public sealed class CarRentalDbContext(
    DbContextOptions<CarRentalDbContext> options
 ) : DbContext(options) {
 
+   public DbSet<Customer> Customers => Set<Customer>();
+   public DbSet<Employee> Employess => Set<Employee>();
+   public DbSet<Admin> Admins => Set<Admin>();
    public DbSet<Car> Cars => Set<Car>();
    public DbSet<Reservation> Reservations => Set<Reservation>();
 
@@ -14,6 +17,45 @@ public sealed class CarRentalDbContext(
       
       base.OnModelCreating(modelBuilder);
 
+      // Reuse one converter instance
+      var dtoMillis = new DateTimeOffsetToUnixTimeConverter();
+      
+      // TPT: Person base + derived tables
+      modelBuilder.Entity<Person>(b => {
+         b.ToTable("Persons");
+
+         b.HasKey(p => p.Id);
+         b.Property(p => p.Id).ValueGeneratedNever();
+
+         // Map common properties on Person (adjust names to your domain model)
+         b.Property(p => p.FirstName).IsRequired().HasMaxLength(100);
+         b.Property(p => p.LastName).IsRequired().HasMaxLength(100);
+         b.Property(p => p.Email).IsRequired().HasMaxLength(200);
+
+         // If Address is a value object/owned type, map it here so it applies to all derived types
+         b.OwnsOne(p => p.Address, a => {
+              a.Property(x => x.Street).HasMaxLength(200);
+              a.Property(x => x.PostalCode).HasMaxLength(20);
+              a.Property(x => x.City).HasMaxLength(100);
+         });
+      });
+
+      modelBuilder.Entity<Customer>(b => {
+         b.ToTable("Customers");
+      });
+
+      modelBuilder.Entity<Employee>(b => {
+         b.ToTable("Employees");
+         // Employee-specific properties here (if any)
+         b.Property(e => e.PersonnelNumber).IsRequired().HasMaxLength(16);
+      });
+
+      modelBuilder.Entity<Admin>(b => {
+         b.ToTable("Admins");
+         // Admin-specific properties here (if any)
+         b.Property(a => a.AdminRights).IsRequired();
+      });
+      
       modelBuilder.Entity<Reservation>(b => {
          // TABLE
          b.ToTable("Reservations");
@@ -28,7 +70,14 @@ public sealed class CarRentalDbContext(
          b.Property(r => r.CustomerId)
             .IsRequired();
          b.Property(r => r.CreatedAt)
-            .IsRequired();
+            .IsRequired()
+            .HasConversion(dtoMillis);
+         b.Property(r => r.ConfirmedAt)
+            .HasConversion(dtoMillis);
+         b.Property(r => r.CancelledAt)
+            .HasConversion(dtoMillis);
+         b.Property(r => r.ExpiredAt)
+            .HasConversion(dtoMillis);
          b.Property(r => r.Status)
             .IsRequired()
             .HasConversion<string>(); 
@@ -38,10 +87,10 @@ public sealed class CarRentalDbContext(
          b.OwnsOne(r => r.Period, rp => {
             rp.Property(p => p.Start)
                .HasColumnName("Start")
-               .HasPrecision(0); // no fractional seconds
+               .HasConversion(dtoMillis); 
             rp.Property(p => p.End)
                .HasColumnName("End")
-               .HasPrecision(0); // no fractional seconds
+               .HasConversion(dtoMillis); // no fractional seconds
          });
 
          // Optional aber oft sinnvoll (damit EF das Owned immer erwartet)

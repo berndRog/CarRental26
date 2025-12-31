@@ -1,30 +1,21 @@
 using CarRentalApi.Data.Database;
 using CarRentalApi.Data.Repositories;
-using CarRentalApi.Domain;
-using CarRentalApi.Domain.Entities;
 using CarRentalApi.Domain.Enums;
-using CarRentalApi.Domain.Utils;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
-
 namespace CarRentalApiTest.Data.Repositories;
 
-public sealed class ReservationRepositoryTests : TestBase, IAsyncLifetime {
+public sealed class ReservationRepositoryIt : TestBase, IAsyncLifetime {
    private TestSeed _seed = null!;
    private SqliteConnection _dbConnection = null!;
    private CarRentalDbContext _dbContext = null!;
-   private ReservationRepository _repository = null!;
-   private UnitOfWork _unitOfWork = null!;
+   private ReservationRepository _repo = null!;
+   private UnitOfWork _uow = null!;
 
    // BEFORE each test (async)
    public async Task InitializeAsync() {
-
-      var loggerRepository = CreateLogger<ReservationRepository>();
-      var loggerUnitOfWork = CreateLogger<UnitOfWork>();
-
       _seed = new TestSeed();
-      
+
       _dbConnection = new SqliteConnection("Filename=:memory:");
       await _dbConnection.OpenAsync();
 
@@ -34,12 +25,18 @@ public sealed class ReservationRepositoryTests : TestBase, IAsyncLifetime {
          .Options;
 
       _dbContext = new CarRentalDbContext(options);
+
+      // Ensure schema exists (in-memory SQLite is empty per connection)
       await _dbContext.Database.EnsureCreatedAsync();
 
-      _repository = new ReservationRepository(_dbContext, loggerRepository);
-      _unitOfWork = new UnitOfWork(_dbContext, loggerUnitOfWork);
+      _repo = new ReservationRepository(_dbContext, CreateLogger<ReservationRepository>());
+      _uow = new UnitOfWork(_dbContext, CreateLogger<UnitOfWork>());
 
-      //await Task.CompletedTask;
+      // Seed reservations (tracked by EF Core)
+      foreach (var r in _seed.AllReservationsForRepoTests)
+         _repo.Add(r);
+
+      await _uow.SaveAllChangesAsync("Seed reservations", CancellationToken.None);
    }
 
    // AFTER each test (async)
@@ -51,51 +48,18 @@ public sealed class ReservationRepositoryTests : TestBase, IAsyncLifetime {
 
       if (_dbConnection != null) {
          await _dbConnection.CloseAsync();
-         _dbConnection.Dispose();
+         await _dbConnection.DisposeAsync();
          _dbConnection = null!;
       }
-
-      //await Task.CompletedTask;
    }
 
-   // =========
-   // Helpers
-   // =========
-   // private static async Task<(SqliteConnection conn, CarRentalDbContext db, ReservationRepository repo)>
-   //    CreateSutAsync() {
-   //    
-   //    var dbConnection = new SqliteConnection("Filename=:memory:");
-   //    await dbConnection.OpenAsync();
-   //
-   //    var options = new DbContextOptionsBuilder<CarRentalDbContext>()
-   //       .UseSqlite(dbConnection)
-   //       .EnableSensitiveDataLogging()
-   //       .Options;
-   //    
-   //    _dbContext = new CarRentalDbContext(options);
-   //    await _dbContext.Database.EnsureCreatedAsync();
-   //
-   //    var repository = new ReservationRepository(dbContext, NullLogger<ReservationRepository>.Instance);
-   //
-   //    return (dbConnection, dbContext, repository);
-   // }
-
-
-
-   // =========
-   // Tests
-   // =========
    [Fact]
    public async Task FindByIdAsync_returns_reservation_when_found() {
       // Arrange
-      var reservation1 = _seed.Reservation1;
-      var id = reservation1.Id;
-
-      _repository.Add(reservation1);
-      await _unitOfWork.SaveAllChangesAsync();
+      var id = Guid.Parse(_seed.Reservation1Id);
 
       // Act
-      var actual = await _repository.FindByIdAsync(id, CancellationToken.None);
+      var actual = await _repo.FindByIdAsync(id, CancellationToken.None);
 
       // Assert
       Assert.NotNull(actual);
@@ -104,101 +68,109 @@ public sealed class ReservationRepositoryTests : TestBase, IAsyncLifetime {
 
    [Fact]
    public async Task FindByIdAsync_returns_null_when_not_found() {
-      // Arrange
-      var missingId = Guid.NewGuid();
-
       // Act
-      var actual = await _repository.FindByIdAsync(missingId, CancellationToken.None);
+      var actual = await _repo.FindByIdAsync(Guid.NewGuid(), CancellationToken.None);
 
       // Assert
       Assert.Null(actual);
    }
+
+   [Fact]
+   public async Task CountConfirmedOverlappingAsync_counts_only_confirmed_overlapping_and_excludes_ignore_id() {
+      // Arrange
+      // Seed contains 8 confirmed overlapping reservations (Compact).
+      // Ignore Reservation3 -> expect 7.
+      var start = _seed.Period1.Start.AddHours(1);
+      var end = _seed.Period1.End.AddHours(-1);
+      var ignoreId = Guid.Parse(_seed.Reservation3Id);
+
+      // Act
+      var count = await _repo.CountConfirmedOverlappingAsync(
+         category: CarCategory.Compact,
+         start: start,
+         end: end,
+         ignoreReservationId: ignoreId,
+         ct: CancellationToken.None
+      );
+
+      // Assert
+      Assert.Equal(7, count);
+   }
+
+   [Fact]
+   public async Task CountConfirmedOverlappingAsync_returns_1_for_ok_non_overlapping_period() {
+      // Arrange
+      // Seed contains exactly one confirmed reservation in PeriodOkNonOverlapping (Reservation9).
+      var start = _seed.PeriodOkNonOverlapping.Start;
+      var end = _seed.PeriodOkNonOverlapping.End;
+
+      // Act
+      var count = await _repo.CountConfirmedOverlappingAsync(
+         category: CarCategory.Compact,
+         start: start,
+         end: end,
+         ignoreReservationId: Guid.Empty,
+         ct: CancellationToken.None
+      );
+
+      // Assert
+      Assert.Equal(1, count);
+   }
+
+   [Fact]
+   public async Task CountConfirmedOverlappingAsync_returns_0_when_category_differs() {
+      // Arrange
+      var start = _seed.Period1.Start.AddHours(1);
+      var end = _seed.Period1.End.AddHours(-1);
+
+      // Act
+      var count = await _repo.CountConfirmedOverlappingAsync(
+         category: CarCategory.Suv, // different category than seed reservations (Compact)
+         start: start,
+         end: end,
+         ignoreReservationId: Guid.Empty,
+         ct: CancellationToken.None
+      );
+
+      // Assert
+      Assert.Equal(0, count);
+   }
+
+   [Fact]
+   public async Task SelectDraftsToExpireAsync_returns_only_drafts_created_before_or_at_now() {
+      // Arrange
+      var now = _seed.Now;
+
+      // Act
+      var drafts = await _repo.SelectDraftsToExpireAsync(now, CancellationToken.None);
+
+      // Assert
+      Assert.NotNull(drafts);
+      Assert.True(drafts.Count >= 1);
+
+      // Seed has exactly one old draft (Reservation10)
+      var expectedId = Guid.Parse(_seed.Reservation10Id);
+      Assert.Contains(drafts, r => r.Id == expectedId);
+
+      Assert.All(drafts, r => {
+         Assert.Equal(ReservationStatus.Draft, r.Status);
+         Assert.True(r.CreatedAt <= now);
+      });
+   }
+
+   [Fact]
+   public async Task Remove_removes_reservation_from_database() {
+      // Arrange
+      var id = Guid.Parse(_seed.Reservation9Id);
+      var existing = await _repo.FindByIdAsync(id, CancellationToken.None);
+      Assert.NotNull(existing);
+
+      // Act
+      _repo.Remove(existing!);
+      await _uow.SaveAllChangesAsync("Remove reservation", CancellationToken.None);
+
+      // Assert
+      var after = await _repo.FindByIdAsync(id, CancellationToken.None);
+      Assert.Null(after);
+   }
 }
-
-
-//    [Fact]
-//    public async Task SelectDraftsToExpireAsync_returns_only_drafts_with_createdAt_lte_now() {
-//
-//          // Arrange
-//          var now = DateTimeOffset.UtcNow;
-//
-//          // Should be included (Draft, CreatedAt <= now)
-//          
-//          var d1 = CreateReservation(Guid.NewGuid(), ReservationStatus.Draft, now.AddMinutes(-30));
-//          var d2 = CreateReservation(Guid.NewGuid(), ReservationStatus.Draft, now); // boundary
-//
-//          // Should NOT be included (Draft, but CreatedAt > now)
-//          var dFuture = CreateReservation(Guid.NewGuid(), ReservationStatus.Draft, now.AddMinutes(+1));
-//
-//          // Should NOT be included (not Draft)
-//          var confirmed = CreateReservation(Guid.NewGuid(), ReservationStatus.Confirmed, now.AddMinutes(-60));
-//          var cancelled = CreateReservation(Guid.NewGuid(), ReservationStatus.Cancelled, now.AddMinutes(-60));
-//
-//          db.Reservations.AddRange(d1, d2, dFuture, confirmed, cancelled);
-//          await db.SaveChangesAsync();
-//
-//          // Act
-//          var result = await repo.SelectDraftsToExpireAsync(now, CancellationToken.None);
-//
-//          // Assert
-//          Assert.NotNull(result);
-//
-//          var ids = result.Select(r => r.Id).ToHashSet();
-//          Assert.Contains(d1.Id, ids);
-//          Assert.Contains(d2.Id, ids);
-//
-//          Assert.DoesNotContain(dFuture.Id, ids);
-//          Assert.DoesNotContain(confirmed.Id, ids);
-//          Assert.DoesNotContain(cancelled.Id, ids);
-//       }
-//    }
-// }
-//
-// [Fact]
-// public async Task Add_tracks_entity_as_Added_and_persists_after_SaveChanges() {
-//    var (conn, db, repo) = await CreateSutAsync();
-//    await using (conn)
-//    await using (db) {
-//       // Arrange
-//       var id = Guid.NewGuid();
-//       var r = CreateReservation(id, ReservationStatus.Draft, DateTimeOffset.UtcNow.AddMinutes(-5));
-//
-//       // Act
-//       repo.Add(r);
-//
-//       // Assert (ChangeTracker)
-//       var entry = db.Entry(r);
-//       Assert.Equal(EntityState.Added, entry.State);
-//
-//       // Persist check
-//       await db.SaveChangesAsync();
-//       var reloaded = await db.Reservations.FirstOrDefaultAsync(x => x.Id == id);
-//       Assert.NotNull(reloaded);
-//    }
-// }
-//
-// [Fact]
-// public async Task Remove_tracks_entity_as_Deleted_and_deletes_after_SaveChanges() {
-//    var (conn, db, repo) = await CreateSutAsync();
-//    await using (conn)
-//    await using (db) {
-//       // Arrange
-//       var id = Guid.NewGuid();
-//       var r = CreateReservation(id, ReservationStatus.Draft, DateTimeOffset.UtcNow.AddMinutes(-5));
-//
-//       db.Reservations.Add(r);
-//       await db.SaveChangesAsync();
-//
-//       // Act
-//       repo.Remove(r);
-//
-//       // Assert (ChangeTracker)
-//       var entry = db.Entry(r);
-//       Assert.Equal(EntityState.Deleted, entry.State);
-//
-//       // Persist check
-//       await db.SaveChangesAsync();
-//       var reloaded = await db.Reservations.FirstOrDefaultAsync(x => x.Id == id);
-//       Assert.Null(reloaded);
-//    }
-// }

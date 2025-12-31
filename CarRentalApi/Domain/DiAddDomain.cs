@@ -9,6 +9,7 @@ public static class DiAddDomainExtensions {
    public static IServiceCollection AddDomain(
       this IServiceCollection services
    ) {
+      services.AddSingleton<IClock, SystemClock>();
       
       // ----------------------------
       // Reservation UseCases

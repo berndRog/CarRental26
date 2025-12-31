@@ -2,26 +2,27 @@ using CarRentalApi.Domain.Utils;
 namespace CarRentalApi.Domain.UseCases.Reservations;
 
 public sealed class ReservationUcExpire(
-   IReservationRepository reservations,
-   IUnitOfWork unitOfWork,
-   ILogger<ReservationUcExpire> logger
+   IReservationRepository _repository,
+   IUnitOfWork _unitOfWork,
+   ILogger<ReservationUcExpire> _logger,
+   IClock _clock
 ): IReservationUcExpire {
    
    public async Task<Result<int>> ExecuteAsync(CancellationToken ct) {
       
-      DateTimeOffset now = DateTimeOffset.UtcNow;
-      logger.LogInformation("ReservationUcExpire start nowUtc={now}", now.ToDateTimeString());
+      DateTimeOffset now = _clock.UtcNow;
+      _logger.LogInformation("ReservationUcExpire start nowUtc={now}", now.ToDateTimeString());
 
       // fetch drafts to expire from repository or database
-      var drafts = await reservations.SelectDraftsToExpireAsync(now, ct);
-      logger.LogInformation("ReservationUcExpire found draftsToExpire={count}", drafts.Count);
+      var drafts = await _repository.SelectDraftsToExpireAsync(now, ct);
+      _logger.LogInformation("ReservationUcExpire found draftsToExpire={count}", drafts.Count);
 
       // domain logic to expire each draft reservation
       var expiredCount = 0;
       foreach (var reservation in drafts) {
          var result = reservation.Expire(now);
          if (result.IsFailure) {
-            logger.LogWarning(
+            _logger.LogWarning(
                "ReservationUcExpire skip reservationId={reservationId} errorCode={code} message={message}",
                reservation.Id, result.Error!.Code, result.Error!.Message);
             continue;
@@ -30,8 +31,8 @@ public sealed class ReservationUcExpire(
       }
 
       // unit of work to save all changes to database
-      var saved = await unitOfWork.SaveAllChangesAsync("Expired reservation",ct);
-      logger.LogInformation(
+      var saved = await _unitOfWork.SaveAllChangesAsync("Expired reservation",ct);
+      _logger.LogInformation(
          "ReservationUcExpire done expiredCount={expiredCount} savedRows={saved}",
          expiredCount, saved);
 

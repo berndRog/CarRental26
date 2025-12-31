@@ -16,6 +16,9 @@ public static class ReservationErrors {
    
    public static readonly DomainErrors StartDateInPast = new("reservation.start_date_in_past", 
       "Reservation start must be in the future.");
+   
+   public static readonly DomainErrors InvalidTimestamp =
+      new("reservation.invalid_timestamp", "Timestamp is invalid for the current state.");
 
    public static readonly DomainErrors InvalidPeriod = new("reservation.invalid_period",
          "Reservation period is invalid: start must be earlier than end.");

@@ -3,8 +3,19 @@
 	
 	
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=ee7ad454_002D9226_002D40a6_002Dae7c_002D84f867bc6547/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="ReservationUt" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::A807D959-88B0-4BC5-8D63-4481F626ED8C::net10.0::CarRentalApiTest.Domain.Entites.ReservationUt&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::A807D959-88B0-4BC5-8D63-4481F626ED8C::net10.0::CarRentalApiTest.Data.Repositories.ReservationRepositoryTests.FindByIdAsync_returns_reservation_when_found&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
+  &lt;Or&gt;
+    &lt;TestAncestor&gt;
+      &lt;TestId&gt;xUnit::A807D959-88B0-4BC5-8D63-4481F626ED8C::net10.0::CarRentalApiTest.Domain.Entites.ReservationUt&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::A807D959-88B0-4BC5-8D63-4481F626ED8C::net10.0::CarRentalApiTest.Data.Repositories.ReservationRepositoryTests.FindByIdAsync_returns_reservation_when_found&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::A807D959-88B0-4BC5-8D63-4481F626ED8C::net10.0::CarRentalApiTest.Domain.Entities.ReservationTests&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::A807D959-88B0-4BC5-8D63-4481F626ED8C::net10.0::CarRentalApiTest.Domain.UseCases.Reservations.ReservationUcConfirmUt&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::A807D959-88B0-4BC5-8D63-4481F626ED8C::net10.0::CarRentalApiTest.Data.Repositories.ReservationRepositoryIt&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::A807D959-88B0-4BC5-8D63-4481F626ED8C::net10.0::CarRentalApiTest.Domain.UseCases.Reservations.ReservationUcConfirmMoqTest&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::A807D959-88B0-4BC5-8D63-4481F626ED8C::net10.0::CarRentalApiTest.Domain.UseCases.Reservations.ReservationUcCreateDraftIt&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::A807D959-88B0-4BC5-8D63-4481F626ED8C::net10.0::CarRentalApiTest.Domain.UseCases.Reservations.ReservationUcCreateDraftIntegrationtest&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::A807D959-88B0-4BC5-8D63-4481F626ED8C::net10.0::CarRentalApiTest.Domain.UseCases.Reservations.ReservationUcCancelMoqTest&lt;/TestId&gt;
+      &lt;TestId&gt;xUnit::A807D959-88B0-4BC5-8D63-4481F626ED8C::net10.0::CarRentalApiTest.Domain.UseCases.Reservations.ReservationUcCancelUt&lt;/TestId&gt;
+    &lt;/TestAncestor&gt;
+    &lt;ProjectFolder&gt;A807D959-88B0-4BC5-8D63-4481F626ED8C/d:Domain/d:UseCases&lt;/ProjectFolder&gt;
+  &lt;/Or&gt;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

@@ -4,7 +4,8 @@ namespace CarRentalApi.Domain.UseCases.Reservations;
 public sealed class ReservationUcCancel(
    IReservationRepository _repository,
    IUnitOfWork _unitOfWork,
-   ILogger<ReservationUcCancel> _logger
+   ILogger<ReservationUcCancel> _logger,
+   IClock _clock
 ): IReservationUcCancel {
 
    public async Task<Result> ExecuteAsync(
@@ -19,24 +20,26 @@ public sealed class ReservationUcCancel(
       var reservation = await _repository.FindByIdAsync(reservationId, ct);
       if (reservation is null) {
          _logger.LogWarning(
-            "ReservationUcCancel rejected reservationId={reservationId} errorCode={code}",
+            "ReservationUcCancel rejected reservationId={Id} errorCode={code}",
             reservationId, ReservationErrors.NotFound.Code);
          return Result.Failure(ReservationErrors.NotFound);
       }
       
       // domain model logic
-      var result = reservation.Cancel(DateTimeOffset.UtcNow);
+      var now = _clock.UtcNow;
+      var result = reservation.Cancel(now);
       if (result.IsFailure) {
          _logger.LogWarning(
-            "ReservationUcCancel rejected reservationId={reservationId} errorCode={code} message={message}",
+            "ReservationUcCancel rejected reservationId={Id} errorCode={code} message={message}",
             reservationId, result.Error!.Code, result.Error!.Message);
          return result;
       }
 
       // unit of work to save all changes to database
-      var saved = await _unitOfWork.SaveAllChangesAsync("", ct);
+      var saved = await _unitOfWork.SaveAllChangesAsync("Reservation cancelled", ct);
+
       _logger.LogInformation(
-         "ReservationUcCancel done reservationId={reservationId} savedRows={saved}",
+         "ReservationUcCancel done reservationId={Id} savedRows={saved}",
          reservationId, saved);
       return Result.Success();
    }

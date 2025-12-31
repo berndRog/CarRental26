@@ -6,15 +6,18 @@ namespace CarRentalApi.Domain.Entities;
 public sealed record class Address(
    string Street,
    string PostalCode,
-   string City,
-   string Country
+   string City
 ) {
    public static Result<Address> Create(
       string street,
       string postalCode,
-      string city,
-      string country
+      string city
    ) {
+      // Normalize input early
+      street = street?.Trim() ?? string.Empty;
+      postalCode = postalCode?.Trim() ?? string.Empty;
+      city = city?.Trim() ?? string.Empty;
+      
       if (string.IsNullOrWhiteSpace(street))
          return Result<Address>.Failure(AddressErrors.StreetIsRequired);
 
@@ -24,16 +27,6 @@ public sealed record class Address(
       if (string.IsNullOrWhiteSpace(city))
          return Result<Address>.Failure(AddressErrors.CityIsRequired);
 
-      if (string.IsNullOrWhiteSpace(country))
-         return Result<Address>.Failure(AddressErrors.CountryIsRequired);
-
-      return Result<Address>.Success(
-         new Address(
-            street.Trim(),
-            postalCode.Trim(),
-            city.Trim(),
-            country.Trim()
-         )
-      );
+      return Result<Address>.Success(new Address(street, postalCode, city));
    }
 }
