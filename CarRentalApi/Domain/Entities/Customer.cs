@@ -4,6 +4,14 @@ namespace CarRentalApi.Domain.Entities;
 
 public sealed class Customer : Person {
    
+   // Navigation properties
+   // Customer - Reservation [1] : [1..n]
+   private readonly List<Reservation> _reservations = new();
+   public IReadOnlyCollection<Reservation> Reservations => _reservations.AsReadOnly();
+   // Customer - Rental [1] : [1..n]
+   private readonly List<Rental> _rentals = new();
+   public IReadOnlyCollection<Rental> Rentals => _rentals.AsReadOnly();
+   
    // EF Core
    private Customer() { }
 

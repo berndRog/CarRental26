@@ -6,9 +6,17 @@ namespace CarRentalApi.Domain.Entities;
 
 public sealed class Reservation {
    public Guid Id { get; private set; }
+   // Car category reserved
    public CarCategory CarCategory { get; private set; }
+   
+   // Navigation properties
+   // Customer : Reservation = [1] : [0..n]
    public Guid CustomerId { get; private set; }
-
+   public Customer Customer { get; private set; } = default!;
+   // Rental : Reservation = [0..1] : [1]
+   public Rental? Rental { get; private set; }
+   
+   // Properties
    public RentalPeriod Period { get; private set; } = default!;
    public ReservationStatus Status { get; private set; }
 

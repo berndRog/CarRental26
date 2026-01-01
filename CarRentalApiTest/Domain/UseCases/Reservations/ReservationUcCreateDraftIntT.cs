@@ -11,7 +11,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 namespace CarRentalApiTest.Domain.UseCases.Reservations;
 
-public sealed class ReservationUcCreateDraftIntegrationtest : TestBase, IAsyncLifetime {
+public sealed class ReservationUcCreateDraftIntT : TestBase, IAsyncLifetime {
    private TestSeed _seed = null!;
    private SqliteConnection _dbConnection = null!;
    private CarRentalDbContext _dbContext = null!;

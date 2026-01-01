@@ -15,7 +15,7 @@ using Xunit;
 
 namespace CarRentalApiTest.Domain.UseCases.Reservations;
 
-public sealed class ReservationUcConfirmMoqTest {
+public sealed class ReservationUcConfirmMoqT {
    private readonly Mock<IReservationRepository> _repo = new(MockBehavior.Strict);
    private readonly Mock<IReservationConflictPolicy> _conflicts = new(MockBehavior.Strict);
    private readonly Mock<IUnitOfWork> _uow = new(MockBehavior.Strict);

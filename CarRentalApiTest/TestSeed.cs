@@ -11,11 +11,13 @@ public sealed class TestSeed {
    public string Customer2Id = "00000000-0002-0000-0000-000000000000";
    public string Customer3Id = "00000000-0003-0000-0000-000000000000";
    public string Customer4Id = "00000000-0004-0000-0000-000000000000";
-   public static Customer Customer1 { get; private set; } = null!;
-   public static Customer Customer2 { get; private set; } = null!;
-   public static Customer Customer3 { get; private set; } = null!;
-   public static Customer Customer4 { get; private set; } = null!;
-   public static Customer Customer5 { get; private set; } = null!;
+   public string Customer5Id = "00000000-0005-0000-0000-000000000000";
+   
+   public Customer Customer1 { get; private set; } = null!;
+   public Customer Customer2 { get; private set; } = null!;
+   public Customer Customer3 { get; private set; } = null!;
+   public Customer Customer4 { get; private set; } = null!;
+   public Customer Customer5 { get; private set; } = null!;
 
    //---------- Test data for cars ----------
    public string Car1Id = "00000000-0000-0001-0000-000000000000";
@@ -39,32 +41,32 @@ public sealed class TestSeed {
    public string Car19Id = "00000000-0000-0019-0000-000000000000";
    public string Car20Id = "00000000-0000-0020-0000-000000000000";
 
-   public static Car Car1 { get; private set; } = null!;
-   public static Car Car2 { get; private set; } = null!;
-   public static Car Car3 { get; private set; } = null!;
-   public static Car Car4 { get; private set; } = null!;
-   public static Car Car5 { get; private set; } = null!;
-   public static Car Car6 { get; private set; } = null!;
-   public static Car Car7 { get; private set; } = null!;
-   public static Car Car8 { get; private set; } = null!;
-   public static Car Car9 { get; private set; } = null!;
-   public static Car Car10 { get; private set; } = null!;
-   public static Car Car11 { get; private set; } = null!;
-   public static Car Car12 { get; private set; } = null!;
-   public static Car Car13 { get; private set; } = null!;
-   public static Car Car14 { get; private set; } = null!;
-   public static Car Car15 { get; private set; } = null!;
-   public static Car Car16 { get; private set; } = null!;
-   public static Car Car17 { get; private set; } = null!;
-   public static Car Car18 { get; private set; } = null!;
-   public static Car Car19 { get; private set; } = null!;
-   public static Car Car20 { get; private set; } = null!;
-   
-   public static IReadOnlyList<Car> Cars => [
-      Car1, Car2, Car3, Car4, Car5, // Economy
-      Car6, Car7, Car8, Car9, Car10, // Compact
-      Car11, Car12, Car13, Car14, Car15, // Midsize
-      Car16, Car17, Car18, Car19, Car20 // SUV
+   public Car Car1 { get; private set; } = null!;
+   public Car Car2 { get; private set; } = null!;
+   public Car Car3 { get; private set; } = null!;
+   public Car Car4 { get; private set; } = null!;
+   public Car Car5 { get; private set; } = null!;
+   public Car Car6 { get; private set; } = null!;
+   public Car Car7 { get; private set; } = null!;
+   public Car Car8 { get; private set; } = null!;
+   public Car Car9 { get; private set; } = null!;
+   public Car Car10 { get; private set; } = null!;
+   public Car Car11 { get; private set; } = null!;
+   public Car Car12 { get; private set; } = null!;
+   public Car Car13 { get; private set; } = null!;
+   public Car Car14 { get; private set; } = null!;
+   public Car Car15 { get; private set; } = null!;
+   public Car Car16 { get; private set; } = null!;
+   public Car Car17 { get; private set; } = null!;
+   public Car Car18 { get; private set; } = null!;
+   public Car Car19 { get; private set; } = null!;
+   public Car Car20 { get; private set; } = null!;
+
+   public IReadOnlyList<Car> Cars => [
+      Car1, Car2, Car3, Car4, Car5,
+      Car6, Car7, Car8, Car9, Car10,
+      Car11, Car12, Car13, Car14, Car15,
+      Car16, Car17, Car18, Car19, Car20
    ];
 
    // ---------- Test data for reservations ----------
@@ -78,10 +80,7 @@ public sealed class TestSeed {
    public string Reservation8Id = "00800000-0000-0000-0000-000000000000";
    public string Reservation9Id = "00900000-0000-0000-0000-000000000000";
    public string Reservation10Id = "01000000-0000-0000-0000-000000000000";
-   public string Reservation11Id = "01100000-0000-0000-0000-000000000000";
-   public string Reservation12Id = "01200000-0000-0000-0000-000000000000";
-
-   // Reservations (we keep your original ones and add missing ones)
+   
    public Reservation Reservation1 { get; private set; } = null!;
    public Reservation Reservation2 { get; private set; } = null!;
    public Reservation Reservation3 { get; private set; } = null!;
@@ -93,10 +92,18 @@ public sealed class TestSeed {
    public Reservation Reservation9 { get; private set; } = null!;
    public Reservation Reservation10 { get; private set; } = null!;
 
-   // Convenience lists for repository integration tests
-   public IReadOnlyList<Reservation> ReservationsOverlappingConfirmed { get; private set; } = [];
-   public IReadOnlyList<Reservation> AllReservationsForRepoTests { get; private set; } = [];
+   public IReadOnlyList<Reservation> Reservations => [
+      Reservation1, Reservation2, Reservation3, Reservation4,
+      Reservation5, Reservation6, Reservation7, Reservation8,
+      Reservation9, Reservation10
+   ];
+   
+   public IReadOnlyList<Reservation> ReservationsOverlappingConfirmed => [
+      Reservation1, Reservation2, Reservation3, Reservation4,
+      Reservation5, Reservation6, Reservation7, Reservation8
+   ];
 
+   //---------- Common test periods ----------
    public DateTimeOffset Now => DateTimeOffset.Parse("2026-01-01T00:00:00+00:00");
 
    // Periods for overlap/non-overlap scenarios
@@ -127,9 +134,14 @@ public sealed class TestSeed {
       DateTimeOffset.Parse("2025-12-01T10:00:00+00:00");
 
    public TestSeed() {
+      //---------- Customers ----------
       Customer1 = CreateCustomer(Customer1Id, "Erika", "Mustermann","e.mustermann@t-line.de");
       Customer2 = CreateCustomer(Customer2Id, "Max", "Mustermann","m.mustermann@gmail.com");
-
+      Customer3 = CreateCustomer(Customer3Id, "Arne", "Arndt", "a.arndt@icloud.com");
+      Customer4 = CreateCustomer(Customer4Id, "Benno", "Bauer", "b.bauer@t-online.de");
+      Customer5 = CreateCustomer(Customer5Id, "Chrisitine","Conrad", "c.conrad@gmx.de",
+         "Hauptstrasse 5", "12345", "Musterstadt");
+      
       Car1 = CreateCar(Car1Id, CarCategory.Economy, "VW", "Polo", "ECO-001");
       Car2 = CreateCar(Car2Id, CarCategory.Economy, "VW", "Polo", "ECO-002");
       Car3 = CreateCar(Car3Id, CarCategory.Economy, "VW", "Polo", "ECO-003");
@@ -146,50 +158,39 @@ public sealed class TestSeed {
       Car12 = CreateCar(Car12Id, CarCategory.Midsize, "BMW", "3 Series", "MID-002");
       Car13 = CreateCar(Car13Id, CarCategory.Midsize, "BMW", "3 Series", "MID-003");
       Car14 = CreateCar(Car14Id, CarCategory.Midsize, "BMW", "3 Series", "MID-004");
-      Car15 = CreateCar(Car14Id, CarCategory.Midsize, "BMW", "3 Series", "MID-005");
+      Car15 = CreateCar(Car15Id, CarCategory.Midsize, "BMW", "3 Series", "MID-005");
 
       Car16 = CreateCar(Car16Id, CarCategory.Suv, "Audi", "Q5", "SUV-001");
       Car17 = CreateCar(Car17Id, CarCategory.Suv, "Audi", "Q5", "SUV-002");
       Car18 = CreateCar(Car18Id, CarCategory.Suv, "Audi", "Q5", "SUV-003");
       Car19 = CreateCar(Car19Id, CarCategory.Suv, "Audi", "Q5", "SUV-004");
-      Car20 = CreateCar(Car19Id, CarCategory.Suv, "Audi", "Q5", "SUV-005");
+      Car20 = CreateCar(Car20Id, CarCategory.Suv, "Audi", "Q5", "SUV-005");
+      
+      //---------- Reservations ----------
+      // Reservations (raw):
+      //  1–8  intended to be confirmed and overlapping with Period1
+      //    9  intended to be confirmed and non-overlapping
+      //   10  intended to stay draft and expire
 
-      // Reservations for repository integration tests
-      // - 8 confirmed overlapping (Compact, overlapping with Period1)
-      // - 1 confirmed non-overlapping (Compact, PeriodOkNonOverlapping)
-      // - 1 draft old enough to expire (Compact, createdAt <= Now)
       var createdAtConfirmed = DateTimeOffset.Parse("2025-12-25T10:00:00+00:00");
-      var confirmedAt = createdAtConfirmed.AddMinutes(5);
 
-      Reservation1 = CreateReservation(Reservation1Id, Customer1Id, CarCategory.Compact, Period1, createdAtConfirmed);
-      Reservation1.Confirm(confirmedAt);
-
+      Reservation1 = CreateReservation(Reservation1Id, Customer1Id, CarCategory.Compact, Period1, 
+         createdAtConfirmed);
       Reservation2 = CreateReservation(Reservation2Id, Customer1Id, CarCategory.Compact, PeriodOverlap1,
          createdAtConfirmed);
-      Reservation2.Confirm(confirmedAt);
-
-      Reservation3 = CreateReservation(Reservation3Id, Customer1Id, CarCategory.Compact, Period1, createdAtConfirmed);
-      Reservation3.Confirm(confirmedAt);
-
+      Reservation3 = CreateReservation(Reservation3Id, Customer1Id, CarCategory.Compact, Period1, 
+         createdAtConfirmed);
       Reservation4 = CreateReservation(Reservation4Id, Customer2Id, CarCategory.Compact, PeriodOverlap1,
          createdAtConfirmed);
-      Reservation4.Confirm(confirmedAt);
-
-      Reservation5 = CreateReservation(Reservation5Id, Customer2Id, CarCategory.Compact, Period1, createdAtConfirmed);
-      Reservation5.Confirm(confirmedAt);
-
+      Reservation5 = CreateReservation(Reservation5Id, Customer2Id, CarCategory.Compact, Period1, 
+         createdAtConfirmed);
       Reservation6 = CreateReservation(Reservation6Id, Customer3Id, CarCategory.Compact, PeriodOverlap1,
          createdAtConfirmed);
-      Reservation6.Confirm(confirmedAt);
-
-      Reservation7 = CreateReservation(Reservation7Id, Customer3Id, CarCategory.Compact, Period1, createdAtConfirmed);
-      Reservation7.Confirm(confirmedAt);
-
+      Reservation7 = CreateReservation(Reservation7Id, Customer3Id, CarCategory.Compact, Period1, 
+         createdAtConfirmed);
       Reservation8 = CreateReservation(Reservation8Id, Customer4Id, CarCategory.Compact, PeriodOverlap1,
          createdAtConfirmed);
-      Reservation8.Confirm(confirmedAt);
-
-      // Confirmed but NOT overlapping with Period1
+      // NOT overlapping with Period1
       Reservation9 = CreateReservation(
          id: Reservation9Id,
          customerId: Customer1Id,
@@ -197,7 +198,6 @@ public sealed class TestSeed {
          period: PeriodOkNonOverlapping,
          createdAt: createdAtConfirmed
       );
-      Reservation9.Confirm(confirmedAt);
 
       // Draft to expire
       Reservation10 = CreateReservation(
@@ -207,17 +207,6 @@ public sealed class TestSeed {
          period: Period1,
          createdAt: DraftCreatedAtOld
       );
-
-      ReservationsOverlappingConfirmed = new List<Reservation> {
-         Reservation1, Reservation2, Reservation3, Reservation4,
-         Reservation5, Reservation6, Reservation7, Reservation8
-      };
-
-      AllReservationsForRepoTests = new List<Reservation> {
-         Reservation1, Reservation2, Reservation3, Reservation4,
-         Reservation5, Reservation6, Reservation7, Reservation8,
-         Reservation9, Reservation10
-      };
    }
 
    // ---------- Helper ----------

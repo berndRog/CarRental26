@@ -7,13 +7,13 @@ using Microsoft.Extensions.Logging;
 using Moq;
 namespace CarRentalApiTest.Domain.UseCases.Reservations;
 
-public sealed class ReservationUcExpireMoqTest {
+public sealed class ReservationUcExpireMoqT {
    private readonly FakeClock _clock;
    private readonly Mock<ILogger<ReservationUcExpire>> _logger = new();
    private readonly Mock<IReservationRepository> _repo = new(MockBehavior.Strict);
    private readonly Mock<IUnitOfWork> _uow = new(MockBehavior.Strict);
 
-   public ReservationUcExpireMoqTest() {
+   public ReservationUcExpireMoqT() {
       var seed = new TestSeed();
       _clock = new FakeClock(seed.Now);
    }

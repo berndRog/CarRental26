@@ -5,7 +5,14 @@ using CarRentalApi.Domain.Utils;
 namespace CarRentalApi.Domain.Entities;
 
 public sealed class Car {
+   
    public Guid Id { get; private set; }
+   
+   // Navigation properties
+   // Car : Rental = [1] : [0..n]
+   private readonly List<Rental> _rentals = new();
+   public IReadOnlyCollection<Rental> Rentals => _rentals.AsReadOnly();
+   
    public string Manufacturer { get; private set; } = string.Empty;
    public string Model { get; private set; } = string.Empty;
    public string LicensePlate { get; private set; } = string.Empty;
@@ -15,8 +22,7 @@ public sealed class Car {
    public CarStatus Status { get; private set; }
 
    // EF Core ctor
-   private Car() {
-   }
+   private Car() { }
 
    // Domain ctor
    private Car(
@@ -46,20 +52,16 @@ public sealed class Car {
       manufacturer = manufacturer?.Trim() ?? string.Empty;
       model = model?.Trim() ?? string.Empty;
       licensePlate = licensePlate?.Trim() ?? string.Empty;
-
-      // Validate category
+      
       if (!Enum.IsDefined(typeof(CarCategory), category))
          return Result<Car>.Failure(CarErrors.CategoryIsRequired);
-
-      // Validate manufacturer
+      
       if (string.IsNullOrWhiteSpace(manufacturer))
          return Result<Car>.Failure(CarErrors.ManufacturerIsRequired);
-
-      // Validate model
+      
       if (string.IsNullOrWhiteSpace(model))
          return Result<Car>.Failure(CarErrors.ModelIsRequired);
-
-      // Validate license plate
+      
       if (string.IsNullOrWhiteSpace(licensePlate))
          return Result<Car>.Failure(CarErrors.LicensePlateIsRequired);
 
@@ -72,38 +74,64 @@ public sealed class Car {
       );
    }
 
-   // ---------- Domain behavior ----------
-   public Result MarkAsRented() {
-      if (Status != CarStatus.Available)
-         return Result.Failure(CarErrors.CarNotAvailable);
-
-      Status = CarStatus.Rented;
-      return Result.Success();
-   }
-
-   public Result MarkAsAvailable() {
-      if (Status != CarStatus.Rented)
-         return Result.Failure(CarErrors.InvalidStatusTransition);
-
-      Status = CarStatus.Available;
-      return Result.Success();
-   }
-
-   public Result SendToMaintenance() {
-      // Business rule: retired cars cannot change status anymore.
+   // ---------- Status machine (centralized rules) --------
+   private Result Transition(
+      CarStatus from,
+      CarStatus to, 
+      DomainErrors error
+   ) {
+      // Removed/Retired cars cannot change status anymore.
       if (Status == CarStatus.Retired)
          return Result.Failure(CarErrors.InvalidStatusTransition);
 
-      Status = CarStatus.Maintenance;
+      if (Status != from)
+         return Result.Failure(error);
+
+      Status = to;
       return Result.Success();
    }
+   
+   // ---------- Domain behavior ----------
+   // Available -> Rented
+   public Result MarkAsRented()
+      => Transition(
+         from: CarStatus.Available,
+         to: CarStatus.Rented,
+         error: CarErrors.CarNotAvailable
+      );
 
+   // Rented -> Available
+   public Result MarkAsAvailable()
+      => Transition(
+         from: CarStatus.Rented,
+         to: CarStatus.Available,
+         error: CarErrors.InvalidStatusTransition
+      );
+
+   // Available -> Maintenance  (User Story 1.2)
+   public Result SendToMaintenance()
+      => Transition(
+         from: CarStatus.Available,
+         to: CarStatus.Maintenance,
+         error: CarErrors.InvalidStatusTransition
+      );
+
+   // Maintenance -> Available (User Story 1.3)
+   public Result ReturnFromMaintenance()
+      => Transition(
+         from: CarStatus.Maintenance,
+         to: CarStatus.Available,
+         error: CarErrors.InvalidStatusTransition
+      );
+
+   //---------- Retire car (User Story 1.4) ----------
    public Result Retire() {
-      // Business rule: a car can be retired from any state except already retired.
+      // strong invariant: once removed, lifecycle ends (idempotent)
       if (Status == CarStatus.Retired)
          return Result.Success();
 
       Status = CarStatus.Retired;
       return Result.Success();
    }
+
 }
