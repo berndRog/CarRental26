@@ -11,16 +11,16 @@ public sealed class Rental {
    
    public Guid Id { get; private set; }
    
-   // Navigation properties
+   // Navigation properties (with object graphs)
+   // Car : Rental = [1] : [1..n]
+   public Guid CarId { get; private set; }
+   public Car Car { get; private set; } = null!;
    // Reservation : Rental = [1] : [1]
    public Guid ReservationId { get; private set; }
    public Reservation Reservation { get; private set; } = null!;
    // Customer : Rental = [1] : [1..n]
    public Guid CustomerId { get; private set; }
    public Customer Customer { get; private set; } = null!;
-   // Car : Rental = [1] : [1..n]
-   public Guid CarId { get; private set; }
-   public Car Car { get; private set; } = null!;
    
    // Lifecycle
    public RentalStatus Status { get; private set; }

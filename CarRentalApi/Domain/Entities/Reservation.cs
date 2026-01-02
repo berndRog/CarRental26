@@ -9,12 +9,15 @@ public sealed class Reservation {
    // Car category reserved
    public CarCategory CarCategory { get; private set; }
    
-   // Navigation properties
+   // Navigation properties (with object graphs)
    // Customer : Reservation = [1] : [0..n]
    public Guid CustomerId { get; private set; }
    public Customer Customer { get; private set; } = default!;
    // Rental : Reservation = [0..1] : [1]
    public Rental? Rental { get; private set; }
+   
+   // Navigation with foreign keys only (no object graphs)
+   // public Guid CustomerId { get; private set; } 
    
    // Properties
    public RentalPeriod Period { get; private set; } = default!;

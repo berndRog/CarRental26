@@ -41,6 +41,32 @@ public sealed class ConfigRentals(
       b.Property(x => x.KmIn)
          .IsRequired(false);
 
+      
+      //relationships without navigations
+      
+      /*
+      //--- Relationships without navigations ---
+      // Rental : Customer [1] : [1..*]
+      b.HasOne<Customer>()
+         .WithMany()
+         .HasForeignKey(x => x.CustomerId)
+         .OnDelete(DeleteBehavior.Restrict);
+      
+      // Rental : Reservation [1] : [1]
+      b.HasOne<Reservation>()
+         .WithOne()
+         .HasForeignKey<Rental>(x => x.ReservationId)
+         .OnDelete(DeleteBehavior.Restrict);
+      // One rental per reservation
+      b.HasIndex(x => x.ReservationId).IsUnique();
+      
+      // Rental (*) -> Car (1)
+      b.HasOne<Car>()
+         .WithMany()
+         .HasForeignKey(x => x.CarId)
+         .OnDelete(DeleteBehavior.Restrict);
+      */
+      
       // Helpful indexes (fast lookups)
       b.HasIndex(x => x.CarId);
       b.HasIndex(x => x.ReservationId);

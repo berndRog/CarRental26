@@ -6,15 +6,17 @@ namespace CarRentalApi.Data.Database;
 public sealed class ConfigCustomers: IEntityTypeConfiguration<Customer> {
    
    public void Configure(EntityTypeBuilder<Customer> b) {
-      // Table
+      
+      // Tablename
       b.ToTable("Customers");
      
-      // Primary Key
-      b.HasKey(x => x.Id);
+      // Primary Key is inherited from Person
       
       // Properties
       b.Property(x => x.Id).ValueGeneratedNever();
       
+      /*
+      // Relationships with object graphs
       // Customer: Reservations = 1 : 1..*
       b.HasMany(c => c.Reservations)
          .WithOne(r => r.Customer)
@@ -28,5 +30,7 @@ public sealed class ConfigCustomers: IEntityTypeConfiguration<Customer> {
          .HasForeignKey(r => r.CustomerId)
          .OnDelete(DeleteBehavior.Restrict)
          .IsRequired();
+      */
+      
    }
 }

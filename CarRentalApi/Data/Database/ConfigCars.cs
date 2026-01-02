@@ -12,7 +12,8 @@ public sealed class ConfigCars: IEntityTypeConfiguration<Car> {
       b.HasKey(x => x.Id);
       
       // Properties
-      b.Property(x => x.Id).ValueGeneratedNever();
+      b.Property(x => x.Id)
+         .ValueGeneratedNever();
       b.Property(x => x.Manufacturer)
          .IsRequired()
          .HasMaxLength(100);
@@ -29,12 +30,15 @@ public sealed class ConfigCars: IEntityTypeConfiguration<Car> {
       b.Property(x => x.Status)
          .IsRequired();
       
+      /*
+      // Relationships with object graphs
       // Cars : Rentals = 1 : 1..*
       b.HasMany(c => c.Rentals)
          .WithOne(r => r.Car)
          .HasForeignKey(r => r.CarId)
          .OnDelete(DeleteBehavior.Restrict)
          .IsRequired();
+      */
       
       // Index "available cars by category"
       b.HasIndex(x => new { x.Category, x.Status });

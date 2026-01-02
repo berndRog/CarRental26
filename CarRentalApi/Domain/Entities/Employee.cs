@@ -3,7 +3,7 @@ using CarRentalApi.Domain.Utils;
 namespace CarRentalApi.Domain.Entities;
 
 public class Employee: Person {
-
+   
    public string PersonnelNumber { get; protected set; } = string.Empty;
 
    // EF Core ctor

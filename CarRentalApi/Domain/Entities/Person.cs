@@ -2,11 +2,8 @@ using System.Text.RegularExpressions;
 using CarRentalApi.Domain.Errors;
 namespace CarRentalApi.Domain.Entities;
 
-
-public abstract class Person {
+public abstract class Person : Entity<Guid> {
    
-   public Guid Id { get; protected set; }
-
    public string FirstName { get; protected set; } = string.Empty;
    public string LastName  { get; protected set; } = string.Empty;
    public string Email     { get; protected set; } = string.Empty;
