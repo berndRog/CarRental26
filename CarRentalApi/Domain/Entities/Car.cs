@@ -4,9 +4,9 @@ using CarRentalApi.Domain.Utils;
 
 namespace CarRentalApi.Domain.Entities;
 
-public sealed class Car {
+public sealed class Car: Entity<Guid> {
    
-   public Guid Id { get; private set; }
+   // Guid Id is inherited from Entity<T>
    
    // Navigation properties
    // Car : Rental = [1] : [0..n]

@@ -4,8 +4,9 @@ using CarRentalApi.Domain.Utils;
 using CarRentalApi.Domain.ValueObjects;
 namespace CarRentalApi.Domain.Entities;
 
-public sealed class Reservation {
-   public Guid Id { get; private set; }
+public sealed class Reservation: Entity<Guid> {
+   // Guid Id is inherited from Entity<T>
+   
    // Car category reserved
    public CarCategory CarCategory { get; private set; }
    

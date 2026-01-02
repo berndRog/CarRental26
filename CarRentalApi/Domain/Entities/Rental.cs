@@ -7,9 +7,9 @@ namespace CarRentalApi.Domain.Entities;
 /// Rental lifecycle created at pick-up and closed at return.
 /// CarId becomes known at pick-up (not in Reservation).
 /// </summary>
-public sealed class Rental {
+public sealed class Rental: Entity<Guid> {
    
-   public Guid Id { get; private set; }
+   // Guid Id is inherited from Entity<T>
    
    // Navigation properties (with object graphs)
    // Car : Rental = [1] : [1..n]

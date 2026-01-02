@@ -19,6 +19,7 @@ public static class DiAddDataExtensions {
       services.AddScoped<IUnitOfWork, UnitOfWork>();
 
       // Repositories
+      services.AddScoped<ICarRepository, CarRepository>();
       services.AddScoped<IReservationRepository, ReservationRepository>();
 
       return services;
