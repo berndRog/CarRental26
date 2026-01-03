@@ -38,7 +38,6 @@ public abstract class Person : Entity<Guid> {
       string email
    ) {
       
-
       if (string.IsNullOrWhiteSpace(firstName))
          return Result.Failure(PersonErrors.FirstNameIsRequired);
 

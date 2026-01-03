@@ -20,6 +20,7 @@ public sealed class CustomerUt {
       Assert.Equal("e.mustermann@t-line.de", customer.Email);
    }
 
+   /*
    [Fact]
    public void ChangeName_updates_first_and_last_name() {
       // Arrange
@@ -55,7 +56,8 @@ public sealed class CustomerUt {
       Assert.True(result.IsFailure);
       Assert.Equal(PersonErrors.LastNameIsRequired.Code, result.Error!.Code);
    }
-
+   */
+   
    [Fact]
    public void ChangeEmail_updates_email() {
       // Arrange

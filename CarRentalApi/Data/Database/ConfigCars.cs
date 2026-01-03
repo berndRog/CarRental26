@@ -30,7 +30,13 @@ public sealed class ConfigCars: IEntityTypeConfiguration<Car> {
       b.Property(x => x.Status)
          .IsRequired();
       
-      /*
+      // Index "available cars by category"
+      b.HasIndex(x => new { x.Category, x.Status });
+      
+      // Relationship Cars : Rentals = 1 : 1..*
+      // --------------------------------------------------------------------------------
+      
+#if OOP_MODE
       // Relationships with object graphs
       // Cars : Rentals = 1 : 1..*
       b.HasMany(c => c.Rentals)
@@ -38,9 +44,13 @@ public sealed class ConfigCars: IEntityTypeConfiguration<Car> {
          .HasForeignKey(r => r.CarId)
          .OnDelete(DeleteBehavior.Restrict)
          .IsRequired();
-      */
-      
-      // Index "available cars by category"
-      b.HasIndex(x => new { x.Category, x.Status });
+#elif DDD_MODE
+      b.HasMany<Rental>()
+         .WithOne(r => r.Car)
+         .HasForeignKey(r => r.CarId);
+         .OnDelete(DeleteBehavior.Restrict);
+#else
+      #error "Define either OOP_MODE or DDD_MODE in .csproj"
+#endif
    }
 }

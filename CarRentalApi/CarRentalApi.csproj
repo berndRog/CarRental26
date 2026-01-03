@@ -5,6 +5,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+
+    <!-- Choose a mode: -->
+    <!-- OOP mode: -->
+    <DefineConstants>$(DefineConstants);OOP_MODE</DefineConstants>
+    <!-- DDD mode: -->
+    <!-- <DefineConstants>$(DefineConstants);DDD_MODE</DefineConstants> -->
   </PropertyGroup>
 
   <ItemGroup>

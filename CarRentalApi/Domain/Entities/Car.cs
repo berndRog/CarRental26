@@ -8,11 +8,21 @@ public sealed class Car: Entity<Guid> {
    
    // Guid Id is inherited from Entity<T>
    
-   // Navigation properties
-   // Car : Rental = [1] : [0..n]
+#if OOP_MODE
+   // With Navigation properties (object graph)
+   // Car <-> Rental = 1 : 0..n
    private readonly List<Rental> _rentals = new();
    public IReadOnlyCollection<Rental> Rentals => _rentals.AsReadOnly();
-   
+
+#elif DDD_MODE
+   // Without Navigation properties
+   // Use repositories to fetch related Cars
+
+#else
+   #error "Define either OOP_MODE or DDD_MODE in .csproj"
+#endif
+
+
    public string Manufacturer { get; private set; } = string.Empty;
    public string Model { get; private set; } = string.Empty;
    public string LicensePlate { get; private set; } = string.Empty;

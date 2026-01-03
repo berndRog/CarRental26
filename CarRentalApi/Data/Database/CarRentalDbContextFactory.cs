@@ -3,17 +3,17 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace CarRentalApi.Data.Database;
 
-public class CarRentalDbContextFactory : IDesignTimeDbContextFactory<CarRentalDbContext>
-{
-   public CarRentalDbContext CreateDbContext(string[] args)
-   {
+public class CarRentalDbContextFactory : IDesignTimeDbContextFactory<CarRentalDbContext> {
+   public CarRentalDbContext CreateDbContext(string[] args) {
       
       var configuration = new ConfigurationBuilder()
          .SetBasePath(Directory.GetCurrentDirectory())
          .AddJsonFile("appsettings.json", optional: false)
          .AddJsonFile("appsettings.Development.json", optional: true)
          .Build();
-      var connectionString = configuration.GetConnectionString("BankingDb");
+      var connectionString = configuration.GetConnectionString("CarRentalApi");
+      
+      Console.WriteLine("---> Using SQLite connection string: " + connectionString);
       
       var optionsBuilder = new DbContextOptionsBuilder<CarRentalDbContext>();
         

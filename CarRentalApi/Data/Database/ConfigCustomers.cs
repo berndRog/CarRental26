@@ -15,22 +15,7 @@ public sealed class ConfigCustomers: IEntityTypeConfiguration<Customer> {
       // Properties
       b.Property(x => x.Id).ValueGeneratedNever();
       
-      /*
-      // Relationships with object graphs
-      // Customer: Reservations = 1 : 1..*
-      b.HasMany(c => c.Reservations)
-         .WithOne(r => r.Customer)
-         .HasForeignKey(r => r.CustomerId)
-         .OnDelete(DeleteBehavior.Restrict)
-         .IsRequired();
-
-      // Customers : Rentals = 1 : 1..*
-      b.HasMany(c => c.Rentals)
-         .WithOne(r => r.Customer)
-         .HasForeignKey(r => r.CustomerId)
-         .OnDelete(DeleteBehavior.Restrict)
-         .IsRequired();
-      */
+      // NO relationship configuration here!
       
    }
 }

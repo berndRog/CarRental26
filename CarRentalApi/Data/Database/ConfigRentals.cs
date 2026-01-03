@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace CarRentalApi.Data.Database.Configurations;
 
 public sealed class ConfigRentals(
-   DateTimeOffsetToUnixTimeConverter _dtOffMillis
+   DateTimeOffsetToIsoStringConverter _dtOffMillis
 ) : IEntityTypeConfiguration<Rental> {
    
    public void Configure(EntityTypeBuilder<Rental> b) {
@@ -41,40 +41,65 @@ public sealed class ConfigRentals(
       b.Property(x => x.KmIn)
          .IsRequired(false);
 
-      
-      //relationships without navigations
-      
-      /*
-      //--- Relationships without navigations ---
-      // Rental : Customer [1] : [1..*]
-      b.HasOne<Customer>()
-         .WithMany()
-         .HasForeignKey(x => x.CustomerId)
-         .OnDelete(DeleteBehavior.Restrict);
-      
-      // Rental : Reservation [1] : [1]
-      b.HasOne<Reservation>()
-         .WithOne()
-         .HasForeignKey<Rental>(x => x.ReservationId)
-         .OnDelete(DeleteBehavior.Restrict);
-      // One rental per reservation
-      b.HasIndex(x => x.ReservationId).IsUnique();
-      
-      // Rental (*) -> Car (1)
-      b.HasOne<Car>()
-         .WithMany()
-         .HasForeignKey(x => x.CarId)
-         .OnDelete(DeleteBehavior.Restrict);
-      */
-      
       // Helpful indexes (fast lookups)
       b.HasIndex(x => x.CarId);
       b.HasIndex(x => x.ReservationId);
       b.HasIndex(x => new { x.CarId, x.Status });
       b.HasIndex(x => new { x.ReservationId, x.Status });
+      
+ #if OOP_MODE
+      // Relationship: Customer <-> Rentals (1 : 0..n)
+      // --------------------------------------------------
+      // WITH Navigation Properties (OOP-Style)
+      b.HasOne(r => r.Customer)              // Rental has one Customer
+         .WithMany(c => c.Rentals)           // Customer has many Rentals
+         .HasForeignKey(r => r.CustomerId)   // FK in Rentals table
+         .OnDelete(DeleteBehavior.Restrict)
+         .IsRequired();
 
-      // NOTE:
-      // We don't define navigations here (kept minimal).
-      // If you later add navigation properties, configure FK relationships here.
+      // Relationship: Car <-> Rentals (1 : 0..n)
+      // --------------------------------------------------
+      b.HasOne(r => r.Car)                   // Rental has one Car
+         .WithMany(c => c.Rentals)           // Car has many Rentals
+         .HasForeignKey(r => r.CarId)        // FK in Rentals table
+         .OnDelete(DeleteBehavior.Restrict)
+         .IsRequired();
+
+      // Relationship: Reservation <-> Rental (1 : 0..1)
+      // --------------------------------------------------
+      b.HasOne(r => r.Reservation)                 // Rental has one Reservation
+         .WithOne(res => res.Rental)               // Reservation has zero or one Rental
+         .HasForeignKey<Rental>(r => r.ReservationId) // FK in Rental table
+         .OnDelete(DeleteBehavior.Restrict)
+         .IsRequired();
+
+#elif DDD_MODE
+      // Relationship: Customer <-> Rentals (1 : 0..n)
+      // --------------------------------------------------
+      // WITHOUT Navigation Properties (DDD-Style)
+      b.HasOne<Customer>()                   // Rental has one Customer (without Property)
+         .WithMany()                         // Customer has many Rentals (without Collection)
+         .HasForeignKey(r => r.CustomerId)
+         .OnDelete(DeleteBehavior.Restrict)
+         .IsRequired();
+
+      // Relationship: Car <-> Rentals (1 : 0..n)
+      // --------------------------------------------------
+      b.HasOne<Car>()                        // Rental has one Car (without Property)
+         .WithMany()                         // Car has many Rentals (without Collection)
+         .HasForeignKey(r => r.CarId)
+         .OnDelete(DeleteBehavior.Restrict)
+         .IsRequired();
+
+      // Relationship: Reservation <-> Rental (1 : 0..1)
+      // --------------------------------------------------
+      b.HasOne<Reservation>()                // Rental has one Reservation (without Property)
+         .WithOne()                          // Reservation has zero or one Rental (without Property)
+         .HasForeignKey<Rental>(r => r.ReservationId)
+         .OnDelete(DeleteBehavior.Restrict)
+         .IsRequired();
+#else
+   #error "Define either OOP_MODE or DDD_MODE in .csproj"
+#endif
    }
 }

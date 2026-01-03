@@ -103,6 +103,20 @@ public sealed class TestSeed {
       Reservation5, Reservation6, Reservation7, Reservation8
    ];
 
+   // ---------- Test data for rentals ----------
+   public string Rental1Id = "10000000-0000-0000-0000-000000000000";
+   public string Rental2Id = "20000000-0000-0000-0000-000000000000";
+   public string Rental3Id = "30000000-0000-0000-0000-000000000000";
+
+   public Rental Rental1 { get; private set; } = null!;
+   public Rental Rental2 { get; private set; } = null!;
+   public Rental Rental3 { get; private set; } = null!;
+
+   public IReadOnlyList<Rental> Rentals => [
+      Rental1, Rental2, Rental3
+   ];
+
+   
    //---------- Common test periods ----------
    public DateTimeOffset Now => DateTimeOffset.Parse("2026-01-01T00:00:00+00:00");
 
@@ -207,30 +221,48 @@ public sealed class TestSeed {
          period: Period1,
          createdAt: DraftCreatedAtOld
       );
+      
+      // ---------- Rentals (created at pick-up, raw / active) ----------
+      // Note:
+      // - CarId becomes known here (not in Reservation)
+      // - Rentals start in Status = Active
+      // - No returns performed in TestSeed
+
+      var pickupAt = DateTimeOffset.Parse("2030-05-01T10:05:00+00:00");
+
+      Rental1 = CreateRental(
+         id: Rental1Id,
+         reservation: Reservation1,
+         customer: Customer1,
+         car: Car6,              // Compact
+         pickupAt: pickupAt,
+         fuelOut: 80,
+         kmOut: 10_000
+      );
+
+      Rental2 = CreateRental(
+         id: Rental2Id,
+         reservation: Reservation2,
+         customer: Customer1,
+         car: Car7,
+         pickupAt: pickupAt.AddHours(1),
+         fuelOut: 70,
+         kmOut: 20_000
+      );
+
+      Rental3 = CreateRental(
+         id: Rental3Id,
+         reservation: Reservation3,
+         customer: Customer2,
+         car: Car8,
+         pickupAt: pickupAt.AddHours(2),
+         fuelOut: 90,
+         kmOut: 30_000
+      );
+
    }
 
    // ---------- Helper ----------
-   private static Reservation CreateReservation(
-      string id,
-      string customerId,
-      CarCategory carCategory,
-      RentalPeriod period,
-      DateTimeOffset createdAt
-   ) {
-      var result = Reservation.CreateDraft(
-         customerId: customerId.ToGuid(),
-         carCategory: carCategory,
-         start: period.Start,
-         end: period.End,
-         createdAt: createdAt,
-         id: id
-      );
-
-      // Test seed must always be valid
-      Assert.True(result.IsSuccess);
-      return result.Value!;
-   }
-
    private static Customer CreateCustomer(
       string id,
       string firstName,
@@ -297,4 +329,50 @@ public sealed class TestSeed {
       Assert.True(result.IsSuccess);
       return result.Value!;
    }
+   
+   private static Reservation CreateReservation(
+      string id,
+      string customerId,
+      CarCategory carCategory,
+      RentalPeriod period,
+      DateTimeOffset createdAt
+   ) {
+      var result = Reservation.CreateDraft(
+         customerId: customerId.ToGuid(),
+         carCategory: carCategory,
+         start: period.Start,
+         end: period.End,
+         createdAt: createdAt,
+         id: id
+      );
+
+      // Test seed must always be valid
+      Assert.True(result.IsSuccess);
+      return result.Value!;
+   }
+   
+   private static Rental CreateRental(
+      string id,
+      Reservation reservation,
+      Customer customer,
+      Car car,
+      DateTimeOffset pickupAt,
+      int fuelOut,
+      int kmOut
+   ) {
+      var result = Rental.CreateAtPickup(
+         reservationId: reservation.Id,
+         customerId: customer.Id,
+         carId: car.Id,
+         pickupAt: pickupAt,
+         fuelLevelOut: fuelOut,
+         kmOut: kmOut,
+         id: id
+      );
+
+      // Test seed must always be valid
+      Assert.True(result.IsSuccess);
+      return result.Value!;
+   }
+
 }

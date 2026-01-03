@@ -9,16 +9,29 @@ public sealed class Reservation: Entity<Guid> {
    
    // Car category reserved
    public CarCategory CarCategory { get; private set; }
-   
-   // Navigation properties (with object graphs)
-   // Customer : Reservation = [1] : [0..n]
+
+#if OOP_MODE   
+   // With Navigation properties (object graph)
+   // Reservation <-> Customer  = 0..n : 1
    public Guid CustomerId { get; private set; }
    public Customer Customer { get; private set; } = default!;
-   // Rental : Reservation = [0..1] : [1]
+   
+   // Reservation <-> Rental = 1 : 0..1
+   public Guid? RentalId { get; private set; }
    public Rental? Rental { get; private set; }
    
-   // Navigation with foreign keys only (no object graphs)
-   // public Guid CustomerId { get; private set; } 
+#elif  DDD_MODE 
+   // Without Navigation properties
+   // Use repositories to fetch related Customer or Rental
+   
+   // Reservation <-> Customer  = 0..n : 1 as foreign key 
+   public Guid CustomerId { get; private set; }
+   
+   // Reservation <-> Rental = 1 : 0..1 as foreign key
+   public Guid? RentalId { get; private set; }
+#else
+   #error "Define either OOP_MODE or DDD_MODE in .csproj"
+#endif
    
    // Properties
    public RentalPeriod Period { get; private set; } = default!;

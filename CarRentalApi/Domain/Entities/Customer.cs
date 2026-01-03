@@ -3,17 +3,25 @@ using CarRentalApi.Domain.Utils;
 namespace CarRentalApi.Domain.Entities;
 
 public sealed class Customer : Person {
-   
-   // Navigation properties (with object graphs)
-   // Customer - Reservation [1] : [1..n]
+
+#if OOP_MODE
+   // With Navigation properties (object graph)
+   // Customer <-> Reservation 1 : 0..n
    private readonly List<Reservation> _reservations = new();
    public IReadOnlyCollection<Reservation> Reservations => _reservations.AsReadOnly();
-   // Customer - Rental [1] : [1..n]
+   // Customer <-> Rental 1 : 0..n
    private readonly List<Rental> _rentals = new();
    public IReadOnlyCollection<Rental> Rentals => _rentals.AsReadOnly();
 
+#elif DDD_MODE   
+   // Without Navigation properties 
+   // Use repositories to fetch related Reservation or Rental
+
+#else
+   #error "Define either OOP_MODE or DDD_MODE in .csproj"
+#endif
    
-   // EF Core
+   // EF Core ctor
    private Customer() { }
 
    // Domain ctor
@@ -58,21 +66,21 @@ public sealed class Customer : Person {
       return Result<Customer>.Success(customer);
    }
 
-   public Result ChangeName(
-      string firstName,
-      string lastName
-   ) {
-      // Email bleibt unverändert -> eigene minimale Validierung
-      if (string.IsNullOrWhiteSpace(firstName))
-         return Result.Failure(PersonErrors.FirstNameIsRequired);
-
-      if (string.IsNullOrWhiteSpace(lastName))
-         return Result.Failure(PersonErrors.LastNameIsRequired);
-
-      FirstName = firstName.Trim();
-      LastName  = lastName.Trim();
-      return Result.Success();
-   }
+   // public Result ChangeName(
+   //    string firstName,
+   //    string lastName
+   // ) {
+   //    // Email bleibt unverändert -> eigene minimale Validierung
+   //    if (string.IsNullOrWhiteSpace(firstName))
+   //       return Result.Failure(PersonErrors.FirstNameIsRequired);
+   //
+   //    if (string.IsNullOrWhiteSpace(lastName))
+   //       return Result.Failure(PersonErrors.LastNameIsRequired);
+   //
+   //    FirstName = firstName.Trim();
+   //    LastName  = lastName.Trim();
+   //    return Result.Success();
+   // }
 
    public Result ChangeEmail(string email) {
       var validation = ValidatePersonData(FirstName, LastName, email);

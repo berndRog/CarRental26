@@ -11,16 +11,36 @@ public sealed class Rental: Entity<Guid> {
    
    // Guid Id is inherited from Entity<T>
    
-   // Navigation properties (with object graphs)
-   // Car : Rental = [1] : [1..n]
+#if OOP_MODE   
+   // With Navigation properties (object graph)
+   
+   // Car <-> Rental = 1 : 0..n
    public Guid CarId { get; private set; }
    public Car Car { get; private set; } = null!;
-   // Reservation : Rental = [1] : [1]
+   
+   // Reservation <-> Rental = 1 : 0..1
    public Guid ReservationId { get; private set; }
    public Reservation Reservation { get; private set; } = null!;
-   // Customer : Rental = [1] : [1..n]
+   
+   // Customer <-> Rental = 1 : 0..n
    public Guid CustomerId { get; private set; }
    public Customer Customer { get; private set; } = null!;
+
+#elif DDD_MODE
+   // Without Navigation properties (foreign Keys only)
+   // Use repositories to fetch related Car, Reservation, Customer
+   
+   // Car <-> Rental = 1 : 0..n as foreign key
+   public Guid CarId { get; private set; }
+   
+   // Reservation <-> Rental = 1 : 0..1 as foreign key
+   public Guid ReservationId { get; private set; }
+   
+   // Customer <-> Rental = 1 : 0..n as foreign key
+   public Guid CustomerId { get; private set; }
+#else
+   #error "Define either OOP_MODE or DDD_MODE in .csproj"
+#endif
    
    // Lifecycle
    public RentalStatus Status { get; private set; }

@@ -17,7 +17,7 @@ public sealed class CarRentalDbContext(
       base.OnModelCreating(modelBuilder);
 
       // Reuse one converter instance
-      var dtOffMillis = new DateTimeOffsetToUnixTimeConverter();
+      var dtOffMillis = new DateTimeOffsetToIsoStringConverter();
 
       // TPT: Person base + derived tables
       modelBuilder.Ignore<Entity<Guid>>();
