@@ -16,11 +16,15 @@ public sealed class CarRepository(
       return await _dbContext.Cars.FirstOrDefaultAsync(x => x.Id == id, ct);
    }
 
-   public async Task<bool> ExistsLicensePlateAsync(string licensePlate, CancellationToken ct) {
-      licensePlate = (licensePlate ?? string.Empty).Trim();
+   public async Task<bool> ExistsLicensePlateAsync(
+      string licensePlate, 
+      CancellationToken ct
+   ) {
+      var normalized  = licensePlate.Trim().ToUpperInvariant();
 
-      _logger.LogDebug("Check license plate exists ({Plate})", licensePlate);
-      return await _dbContext.Cars.AnyAsync(x => x.LicensePlate == licensePlate, ct);
+      _logger.LogDebug("Check license plate exists ({Plate})", normalized);
+      return await _dbContext.Cars
+         .AnyAsync(x => x.LicensePlate == normalized, ct);
    }
 
    public async Task<int> CountCarsInCategoryAsync(
@@ -28,16 +32,16 @@ public sealed class CarRepository(
       CancellationToken ct
    ) {
       _logger.LogDebug(
-         "Count cars in category={Category}",
+         "Count cars in category={CarCategory}",
          category
       );
 
       var count = await _dbContext.Cars
-         .Where(c => c.Category == category)
+         .Where(c => c.CarCategory == category)
          .CountAsync(ct);
 
       _logger.LogDebug(
-         "Found {Count} cars in category={Category}",
+         "Found {Count} cars in category={CarCategory}",
          count, category
       );
 
@@ -49,18 +53,18 @@ public sealed class CarRepository(
       CarStatus? status,
       CancellationToken ct
    ) {
-      _logger.LogDebug("Select Cars category={Cat} status={Status}", category, status);
+      _logger.LogDebug("Select Cars category={Cat} status={CarStatus}", category, status);
 
       var query = _dbContext.Cars.AsQueryable();
 
       if (category is not null)
-         query = query.Where(x => x.Category == category.Value);
+         query = query.Where(x => x.CarCategory == category.Value);
 
       if (status is not null)
-         query = query.Where(x => x.Status == status.Value);
+         query = query.Where(x => x.CarStatus == status.Value);
 
       return await query
-         .OrderBy(x => x.Category)
+         .OrderBy(x => x.CarCategory)
          .ThenBy(x => x.LicensePlate)
          .ToListAsync(ct);
    }

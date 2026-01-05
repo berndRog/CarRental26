@@ -9,7 +9,7 @@ public static class RentalErrors {
       new("rental.not_found", "RentalContract not found.");
 
    public static readonly DomainErrors InvalidStatusTransition =
-      new("rental.invalid_status_transition", "Status transition is not allowed.");
+      new("rental.invalid_status_transition", "CarStatus transition is not allowed.");
 
    public static readonly DomainErrors InvalidTimestamp =
       new("rental.invalid_timestamp", "Timestamp is invalid.");

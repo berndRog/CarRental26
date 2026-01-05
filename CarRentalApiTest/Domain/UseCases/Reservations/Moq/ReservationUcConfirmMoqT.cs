@@ -161,7 +161,7 @@ public sealed class ReservationUcConfirmMoqT {
 
       // Assert
       Assert.True(result.IsSuccess);
-      Assert.Equal(ReservationStatus.Confirmed, reservation.Status);
+      Assert.Equal(ReservationStatus.Confirmed, reservation.ResStatus);
       Assert.Equal(clock.UtcNow, reservation.ConfirmedAt);
 
       _uow.Verify(

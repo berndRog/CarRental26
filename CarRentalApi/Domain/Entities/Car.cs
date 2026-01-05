@@ -21,15 +21,14 @@ public sealed class Car: Entity<Guid> {
 #else
    #error "Define either OOP_MODE or DDD_MODE in .csproj"
 #endif
-
-
+   
    public string Manufacturer { get; private set; } = string.Empty;
    public string Model { get; private set; } = string.Empty;
    public string LicensePlate { get; private set; } = string.Empty;
 
-   // Category is used for booking and capacity calculation.
-   public CarCategory Category { get; private set; }
-   public CarStatus Status { get; private set; }
+   // CarCategory is used for booking and capacity calculation.
+   public CarCategory CarCategory { get; private set; }
+   public CarStatus CarStatus { get; private set; }
 
    // EF Core ctor
    private Car() { }
@@ -37,17 +36,17 @@ public sealed class Car: Entity<Guid> {
    // Domain ctor
    private Car(
       Guid id,
-      CarCategory category,
+      CarCategory carCategory,
       string manufacturer,
       string model,
       string licensePlate
    ) {
       Id = id;
-      Category = category;
+      CarCategory = carCategory;
       Manufacturer = manufacturer;
       Model = model;
       LicensePlate = licensePlate;
-      Status = CarStatus.Available;
+      CarStatus = CarStatus.Available;
    }
 
    // ---------- Factory (Result-based) ----------
@@ -74,30 +73,37 @@ public sealed class Car: Entity<Guid> {
       
       if (string.IsNullOrWhiteSpace(licensePlate))
          return Result<Car>.Failure(CarErrors.LicensePlateIsRequired);
-
+      
+      // Only uppercase letters, digits and hyphens allowed
+       if (!System.Text.RegularExpressions.Regex.IsMatch(
+             licensePlate,
+             @"^[A-Z0-9\-]+$"))
+         return Result<Car>.Failure(CarErrors.InvalidLicensePlateFormat);
+      
       var idResult = EntityId.Resolve(id, CarErrors.InvalidId);
       if (idResult.IsFailure)
          return Result<Car>.Failure(idResult.Error);
-
+      var carId = idResult.Value;
+      
       return Result<Car>.Success(
-         new Car(idResult.Value, category, manufacturer, model, licensePlate)
+         new Car(carId, category, manufacturer, model, licensePlate)
       );
    }
 
-   // ---------- Status machine (centralized rules) --------
+   // ---------- CarStatus machine (centralized rules) --------
    private Result Transition(
       CarStatus from,
       CarStatus to, 
       DomainErrors error
    ) {
       // Removed/Retired cars cannot change status anymore.
-      if (Status == CarStatus.Retired)
+      if (CarStatus == CarStatus.Retired)
          return Result.Failure(CarErrors.InvalidStatusTransition);
 
-      if (Status != from)
+      if (CarStatus != from)
          return Result.Failure(error);
 
-      Status = to;
+      CarStatus = to;
       return Result.Success();
    }
    
@@ -137,10 +143,10 @@ public sealed class Car: Entity<Guid> {
    //---------- Retire car (User Story 1.4) ----------
    public Result Retire() {
       // strong invariant: once removed, lifecycle ends (idempotent)
-      if (Status == CarStatus.Retired)
+      if (CarStatus == CarStatus.Retired)
          return Result.Success();
 
-      Status = CarStatus.Retired;
+      CarStatus = CarStatus.Retired;
       return Result.Success();
    }
 

@@ -25,13 +25,13 @@ public sealed class ConfigCars: IEntityTypeConfiguration<Car> {
          .HasMaxLength(32);
       b.HasIndex(x => x.LicensePlate)
          .IsUnique();
-      b.Property(x => x.Category)
+      b.Property(x => x.CarCategory)
          .IsRequired();
-      b.Property(x => x.Status)
+      b.Property(x => x.CarStatus)
          .IsRequired();
       
       // Index "available cars by category"
-      b.HasIndex(x => new { x.Category, x.Status });
+      b.HasIndex(x => new { Category = x.CarCategory, Status = x.CarStatus });
       
       // Relationship Cars : Rentals = 1 : 1..*
       // --------------------------------------------------------------------------------

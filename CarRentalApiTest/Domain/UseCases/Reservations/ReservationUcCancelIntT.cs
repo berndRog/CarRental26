@@ -81,7 +81,7 @@ public sealed class ReservationUcCancelIntT : TestBase, IAsyncLifetime {
       var actual = await _repository.FindByIdAsync(reservationId, CancellationToken.None);
 
       Assert.NotNull(actual);
-      Assert.Equal(ReservationStatus.Cancelled, actual!.Status);
+      Assert.Equal(ReservationStatus.Cancelled, actual!.ResStatus);
       Assert.Equal(_clock.UtcNow, actual.CancelledAt);
    }
 
@@ -111,7 +111,7 @@ public sealed class ReservationUcCancelIntT : TestBase, IAsyncLifetime {
       var actual = await _repository.FindByIdAsync(reservationId, CancellationToken.None);
 
       Assert.NotNull(actual);
-      Assert.Equal(ReservationStatus.Cancelled, actual!.Status);
+      Assert.Equal(ReservationStatus.Cancelled, actual!.ResStatus);
       Assert.Equal(_clock.UtcNow, actual.CancelledAt);
    }
 

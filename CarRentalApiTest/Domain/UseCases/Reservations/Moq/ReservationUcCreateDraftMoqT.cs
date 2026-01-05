@@ -129,7 +129,7 @@ public sealed class ReservationUcCreateDraftUt {
       Assert.Equal(Guid.Parse(id), reservation.Id);
       Assert.Equal(customerId, reservation.CustomerId);
       Assert.Equal(CarCategory.Compact, reservation.CarCategory);
-      Assert.Equal(ReservationStatus.Draft, reservation.Status);
+      Assert.Equal(ReservationStatus.Draft, reservation.ResStatus);
 
       Assert.Equal(start, reservation.Period.Start);
       Assert.Equal(end, reservation.Period.End);

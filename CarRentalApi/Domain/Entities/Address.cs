@@ -3,11 +3,22 @@ namespace CarRentalApi.Domain.Entities;
 
 // Address is an owned value object without identity.
 // It is immutable and fully replaced on change.
-public sealed record class Address(
-   string Street,
-   string PostalCode,
-   string City
-) {
+public sealed record class Address {
+   
+   public string Street     { get; init; } = string.Empty;
+   public string PostalCode { get; init; } = string.Empty;
+   public string City       { get; init; } = string.Empty;
+
+   private Address(
+      string street,
+      string postalCode,
+      string city
+   ) {
+      Street = street;
+      PostalCode = postalCode;
+      City = city;
+   }
+
    public static Result<Address> Create(
       string street,
       string postalCode,

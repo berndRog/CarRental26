@@ -73,7 +73,7 @@ public sealed class CarUcRetireIt : TestBase, IAsyncLifetime {
       var reloaded = await _repository.FindByIdAsync(id, CancellationToken.None);
 
       Assert.NotNull(reloaded);
-      Assert.Equal(CarStatus.Retired, reloaded!.Status);
+      Assert.Equal(CarStatus.Retired, reloaded!.CarStatus);
    }
 
    [Fact]
@@ -99,7 +99,7 @@ public sealed class CarUcRetireIt : TestBase, IAsyncLifetime {
       var reloaded = await _repository.FindByIdAsync(id, CancellationToken.None);
 
       Assert.NotNull(reloaded);
-      Assert.Equal(CarStatus.Available, reloaded!.Status);
+      Assert.Equal(CarStatus.Available, reloaded!.CarStatus);
    }
 
    [Fact]
@@ -144,7 +144,7 @@ public sealed class CarUcRetireIt : TestBase, IAsyncLifetime {
       var retiredCar = await _repository.FindByIdAsync(id, CancellationToken.None);
 
       Assert.NotNull(retiredCar);
-      Assert.Equal(CarStatus.Retired, retiredCar!.Status);
+      Assert.Equal(CarStatus.Retired, retiredCar!.CarStatus);
 
       // Act 2: try to reactivate (domain operation must be blocked)
       // Note: ReturnFromMaintenance requires Maintenance -> Available,
@@ -155,7 +155,7 @@ public sealed class CarUcRetireIt : TestBase, IAsyncLifetime {
       // Assert 2
       Assert.True(reactivateResult.IsFailure);
       Assert.Equal(CarErrors.InvalidStatusTransition.Code, reactivateResult.Error!.Code);
-      Assert.Equal(CarStatus.Retired, retiredCar.Status);
+      Assert.Equal(CarStatus.Retired, retiredCar.CarStatus);
 
       // Persist attempt (should not change anything anyway)
       await _unitOfWork.SaveAllChangesAsync("attempt reactivate after retire", CancellationToken.None);
@@ -164,7 +164,7 @@ public sealed class CarUcRetireIt : TestBase, IAsyncLifetime {
       var reloaded = await _repository.FindByIdAsync(id, CancellationToken.None);
 
       Assert.NotNull(reloaded);
-      Assert.Equal(CarStatus.Retired, reloaded!.Status);
+      Assert.Equal(CarStatus.Retired, reloaded!.CarStatus);
    }
 
    [Fact]
@@ -182,7 +182,7 @@ public sealed class CarUcRetireIt : TestBase, IAsyncLifetime {
       // Step 1: Available -> Maintenance (User Story 1.2) via domain operation
       var car = await _repository.FindByIdAsync(id, CancellationToken.None);
       Assert.NotNull(car);
-      Assert.Equal(CarStatus.Available, car!.Status);
+      Assert.Equal(CarStatus.Available, car!.CarStatus);
 
       var toMaintenance = car.SendToMaintenance();
       Assert.True(toMaintenance.IsSuccess);
@@ -192,7 +192,7 @@ public sealed class CarUcRetireIt : TestBase, IAsyncLifetime {
 
       var maintenanceCar = await _repository.FindByIdAsync(id, CancellationToken.None);
       Assert.NotNull(maintenanceCar);
-      Assert.Equal(CarStatus.Maintenance, maintenanceCar!.Status);
+      Assert.Equal(CarStatus.Maintenance, maintenanceCar!.CarStatus);
 
       // Step 2: Maintenance -> Retired (User Story 1.4) via use case
       var retireResult = await retireUc.ExecuteAsync(id, CancellationToken.None);
@@ -201,13 +201,13 @@ public sealed class CarUcRetireIt : TestBase, IAsyncLifetime {
       _unitOfWork.ClearChangeTracker();
       var retiredCar = await _repository.FindByIdAsync(id, CancellationToken.None);
       Assert.NotNull(retiredCar);
-      Assert.Equal(CarStatus.Retired, retiredCar!.Status);
+      Assert.Equal(CarStatus.Retired, retiredCar!.CarStatus);
 
       // Step 3: Try to reactivate (User Story 1.3) -> must fail because Retired is terminal
       var reactivate = retiredCar.ReturnFromMaintenance();
       Assert.True(reactivate.IsFailure);
       Assert.Equal(CarErrors.InvalidStatusTransition.Code, reactivate.Error!.Code);
-      Assert.Equal(CarStatus.Retired, retiredCar.Status);
+      Assert.Equal(CarStatus.Retired, retiredCar.CarStatus);
 
       // Persist attempt + reload (should still be Retired)
       await _unitOfWork.SaveAllChangesAsync("attempt reactivate after retire", CancellationToken.None);
@@ -215,7 +215,7 @@ public sealed class CarUcRetireIt : TestBase, IAsyncLifetime {
 
       var reloaded = await _repository.FindByIdAsync(id, CancellationToken.None);
       Assert.NotNull(reloaded);
-      Assert.Equal(CarStatus.Retired, reloaded!.Status);
+      Assert.Equal(CarStatus.Retired, reloaded!.CarStatus);
    }
 
    // ------------------------------------------------------------

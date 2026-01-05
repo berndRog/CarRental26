@@ -2,6 +2,7 @@ using CarRentalApi.Data.Database;
 using CarRentalApi.Domain;
 using CarRentalApi.Domain.Entities;
 using CarRentalApi.Domain.Enums;
+using CarRentalApi.Domain.Errors;
 using CarRentalApi.Domain.Utils;
 using Microsoft.EntityFrameworkCore;
 namespace CarRentalApi.Data.Repositories;
@@ -39,7 +40,7 @@ public sealed class ReservationRepository(
       var count = await _dbContext.Reservations
          .Where(r =>
             r.CarCategory == category &&
-            r.Status == ReservationStatus.Confirmed &&
+            r.ResStatus == ReservationStatus.Confirmed &&
             r.Id != ignoreReservationId &&
             // Overlap check: [start, end) overlaps [r.Start, r.End)
             start < r.Period.End && r.Period.Start < end
@@ -47,7 +48,7 @@ public sealed class ReservationRepository(
          .CountAsync(ct);
 
       _logger.LogDebug(
-         "Found {Count} overlapping confirmed reservations for category={Category}",
+         "Found {Count} overlapping confirmed reservations for category={CarCategory}",
          count, category
       );
 
@@ -61,7 +62,7 @@ public sealed class ReservationRepository(
       _logger.LogDebug("Load Reservation by DateTime ({dtString})", now.ToDateTimeString());
       return await _dbContext.Reservations
          .Where(r =>
-            r.Status == ReservationStatus.Draft &&
+            r.ResStatus == ReservationStatus.Draft &&
             r.CreatedAt <= now)
          .ToListAsync(ct);
    }
@@ -72,8 +73,4 @@ public sealed class ReservationRepository(
       _dbContext.Reservations.Add(reservation);
    }
    
-   public void Remove(Reservation reservation) {
-      _logger.LogDebug("Remove Reservation {Id}", reservation.Id.To8());
-      _dbContext.Reservations.Remove(reservation);
-   }
 }

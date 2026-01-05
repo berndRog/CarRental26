@@ -18,7 +18,7 @@ public sealed class ConfigRentals(
       b.Property(x => x.CustomerId).IsRequired();
       b.Property(x => x.CarId).IsRequired();
 
-      // Status as int
+      // CarStatus as int
       b.Property(x => x.Status)
          .HasConversion<int>()
          .IsRequired();

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DBDE4509-2568-4AAB-A034-15FFF3525D64}"
 	ProjectSection(SolutionItems) = preProject
 		compose.yaml = compose.yaml
-		CarRentalDb.db = CarRentalDb.db
+		CarRentalApi\CarRentalDb.db = CarRentalApi\CarRentalDb.db
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CarRentalApi", "CarRentalApi\CarRentalApi.csproj", "{4C05ABF6-D7E8-40B5-B3C2-7E5275A902A8}"

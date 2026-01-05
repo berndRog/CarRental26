@@ -9,7 +9,7 @@ public static class ReservationErrors {
       "Reservation not found.");
 
    public static readonly DomainErrors InvalidStatusTransition = new("reservation.invalid_status_transition", 
-      "Status transition is not allowed.");
+      "CarStatus transition is not allowed.");
 
    public static readonly DomainErrors Conflict = new("reservation.conflict", 
       "Vehicle is already reserved in the selected period.");

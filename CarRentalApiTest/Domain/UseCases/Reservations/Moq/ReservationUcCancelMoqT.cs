@@ -66,7 +66,7 @@ public sealed class ReservationUcCancelUt {
       // Expire it -> Cancel must be rejected by domain
       var expireResult = reservation.Expire(seed.Now.AddDays(-1));
       Assert.True(expireResult.IsSuccess);
-      Assert.Equal(ReservationStatus.Expired, reservation.Status);
+      Assert.Equal(ReservationStatus.Expired, reservation.ResStatus);
 
       _repo.Setup(r => r.FindByIdAsync(reservation.Id, It.IsAny<CancellationToken>()))
          .ReturnsAsync(reservation);
@@ -123,7 +123,7 @@ public sealed class ReservationUcCancelUt {
 
       // Assert
       Assert.True(result.IsSuccess);
-      Assert.Equal(ReservationStatus.Cancelled, reservation.Status);
+      Assert.Equal(ReservationStatus.Cancelled, reservation.ResStatus);
       Assert.Equal(_clock.UtcNow, reservation.CancelledAt);
 
       _uow.Verify(u => u.SaveAllChangesAsync("Reservation cancelled", It.IsAny<CancellationToken>()), Times.Once);

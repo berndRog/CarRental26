@@ -21,7 +21,7 @@ public sealed class ConfigReservations(
       b.Property(x => x.ConfirmedAt).HasConversion(_dtOffMillis);
       b.Property(x => x.CancelledAt).HasConversion(_dtOffMillis);
       b.Property(x => x.ExpiredAt).HasConversion(_dtOffMillis);
-      b.Property(x => x.Status).IsRequired().HasConversion<string>();
+      b.Property(x => x.ResStatus).IsRequired().HasConversion<string>();
 
       // value object (owned type)
       // Owned: RentalPeriod -> two columns in Reservation table
@@ -36,7 +36,7 @@ public sealed class ConfigReservations(
       // indices
       b.HasIndex(x => x.CarCategory);
       b.HasIndex(x => x.CustomerId);
-      b.HasIndex(x => x.Status);
+      b.HasIndex(x => x.ResStatus);
 
       // Relationship: Customer <-> Reservations (1 : 0..n)
       // --------------------------------------------------

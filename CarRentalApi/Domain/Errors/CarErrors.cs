@@ -16,6 +16,10 @@ public static class CarErrors {
    public static readonly DomainErrors LicensePlateIsRequired =
       new("car.license_plate_required", "License plate is required.");
 
+   public static readonly DomainErrors InvalidLicensePlateFormat = 
+      new("Car.InvalidLicensePlateFormat",
+      "License plate can only contain uppercase letters, digits and hyphens");
+   
    public static readonly DomainErrors LicensePlateMustBeUnique =
       new("car.license_plate_unique", "License plate must be unique.");
 
@@ -23,7 +27,7 @@ public static class CarErrors {
       new("car.not_available", "Car is not available.");
 
    public static readonly DomainErrors InvalidStatusTransition =
-      new("car.invalid_status_transition", "Status transition is not allowed.");
+      new("car.invalid_status_transition", "CarStatus transition is not allowed.");
 
    public static readonly DomainErrors NotFound =
       new("car.not_found", "Car not found.");

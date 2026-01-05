@@ -6,6 +6,11 @@ namespace CarRentalApiTest;
 
 public sealed class TestSeed {
 
+   // ---------- Test data for addresses ----------
+   public Address Address1 { get; private set; } = null!;
+   public Address Address2 { get; private set; } = null!;
+   public Address Address3 { get; private set;} = null!; 
+   
    //---------- Test data for customers ----------
    public string Customer1Id = "00000000-0001-0000-0000-000000000000";
    public string Customer2Id = "00000000-0002-0000-0000-000000000000";
@@ -18,6 +23,10 @@ public sealed class TestSeed {
    public Customer Customer3 { get; private set; } = null!;
    public Customer Customer4 { get; private set; } = null!;
    public Customer Customer5 { get; private set; } = null!;
+   
+   public IReadOnlyList<Customer> Customers => [
+      Customer1, Customer2, Customer3, Customer4, Customer5
+   ];
 
    //---------- Test data for cars ----------
    public string Car1Id = "00000000-0000-0001-0000-000000000000";
@@ -148,14 +157,19 @@ public sealed class TestSeed {
       DateTimeOffset.Parse("2025-12-01T10:00:00+00:00");
 
    public TestSeed() {
-      //---------- Customers ----------
-      Customer1 = CreateCustomer(Customer1Id, "Erika", "Mustermann","e.mustermann@t-line.de");
-      Customer2 = CreateCustomer(Customer2Id, "Max", "Mustermann","m.mustermann@gmail.com");
-      Customer3 = CreateCustomer(Customer3Id, "Arne", "Arndt", "a.arndt@icloud.com");
-      Customer4 = CreateCustomer(Customer4Id, "Benno", "Bauer", "b.bauer@t-online.de");
-      Customer5 = CreateCustomer(Customer5Id, "Chrisitine","Conrad", "c.conrad@gmx.de",
-         "Hauptstrasse 5", "12345", "Musterstadt");
+      //---------- Addresses ----------
+      Address1 = Address.Create("Hauptstr. 23", "29556", "Suderburg").GetValueOrThrow();
+      Address2 = Address.Create("Bahnhofstr.10", "10115", "Berlin").GetValueOrThrow();
+      Address3 = Address.Create("Schillerstr. 1", "30123", "Hannover").GetValueOrThrow();
       
+      //---------- Customers ----------
+      Customer1 = CreateCustomer(Customer1Id, "Erika", "Mustermann","e.mustermann@t-line.de", Address1);
+      Customer2 = CreateCustomer(Customer2Id, "Max", "Mustermann","m.mustermann@gmail.com");
+      Customer3 = CreateCustomer(Customer3Id, "Arne", "Arndt", "a.arndt@icloud.com", Address2);
+      Customer4 = CreateCustomer(Customer4Id, "Benno", "Bauer", "b.bauer@t-online.de");
+      Customer5 = CreateCustomer(Customer5Id, "Chrisitine","Conrad", "c.conrad@gmx.de", Address3);
+      
+      //---------- Cars ----------
       Car1 = CreateCar(Car1Id, CarCategory.Economy, "VW", "Polo", "ECO-001");
       Car2 = CreateCar(Car2Id, CarCategory.Economy, "VW", "Polo", "ECO-002");
       Car3 = CreateCar(Car3Id, CarCategory.Economy, "VW", "Polo", "ECO-003");
@@ -225,7 +239,7 @@ public sealed class TestSeed {
       // ---------- Rentals (created at pick-up, raw / active) ----------
       // Note:
       // - CarId becomes known here (not in Reservation)
-      // - Rentals start in Status = Active
+      // - Rentals start in CarStatus = Active
       // - No returns performed in TestSeed
 
       var pickupAt = DateTimeOffset.Parse("2030-05-01T10:05:00+00:00");
@@ -286,24 +300,14 @@ public sealed class TestSeed {
       string firstName,
       string lastName,
       string email,
-      string street,
-      string postalCode,
-      string city
+      Address? address
    ) {
-      
-      var address = Address.Create(
-         street: street,
-         postalCode: postalCode,
-         city: city
-      );
-      Assert.True(address.IsSuccess);
-
       var result = Customer.Create(
          firstName: firstName,
          lastName: lastName,
          email: email,
          id: id,
-         address: address.Value!
+         address: address
       );
 
       Assert.True(result.IsSuccess);

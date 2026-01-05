@@ -35,7 +35,7 @@ public sealed class ReservationTests {
       Assert.Equal(_seed.Customer1Id.ToGuid(), reservation.CustomerId);
       Assert.Equal(CarCategory.Compact, reservation.CarCategory);
 
-      Assert.Equal(ReservationStatus.Draft, reservation.Status);
+      Assert.Equal(ReservationStatus.Draft, reservation.ResStatus);
       Assert.Equal(createdAt, reservation.CreatedAt);
 
       Assert.Equal(start, reservation.Period.Start);
@@ -113,7 +113,7 @@ public sealed class ReservationTests {
 
       // Assert
       Assert.True(result.IsSuccess);
-      Assert.Equal(ReservationStatus.Confirmed, reservation.Status);
+      Assert.Equal(ReservationStatus.Confirmed, reservation.ResStatus);
       Assert.Equal(confirmedAt, reservation.ConfirmedAt);
    }
 
@@ -130,7 +130,7 @@ public sealed class ReservationTests {
       Assert.True(result.IsFailure);
       Assert.Equal(ReservationErrors.InvalidTimestamp.Code, result.Error.Code); // or InvalidTimestamp if you added it
       Assert.Null(reservation.ConfirmedAt);
-      Assert.Equal(ReservationStatus.Draft, reservation.Status);
+      Assert.Equal(ReservationStatus.Draft, reservation.ResStatus);
    }
 
    [Fact]
@@ -159,7 +159,7 @@ public sealed class ReservationTests {
 
       // Assert
       Assert.True(result.IsSuccess);
-      Assert.Equal(ReservationStatus.Cancelled, reservation.Status);
+      Assert.Equal(ReservationStatus.Cancelled, reservation.ResStatus);
       Assert.Equal(cancelledAt, reservation.CancelledAt);
    }
 
@@ -177,7 +177,7 @@ public sealed class ReservationTests {
 
       // Assert
       Assert.True(result.IsSuccess);
-      Assert.Equal(ReservationStatus.Cancelled, reservation.Status);
+      Assert.Equal(ReservationStatus.Cancelled, reservation.ResStatus);
       Assert.Equal(cancelledAt, reservation.CancelledAt);
    }
 
@@ -194,7 +194,7 @@ public sealed class ReservationTests {
       // Assert
       Assert.True(result.IsFailure);
       Assert.Equal(ReservationErrors.InvalidStatusTransition.Code, result.Error.Code);
-      Assert.Equal(ReservationStatus.Expired, reservation.Status);
+      Assert.Equal(ReservationStatus.Expired, reservation.ResStatus);
    }
 
    [Fact]
@@ -208,7 +208,7 @@ public sealed class ReservationTests {
 
       // Assert
       Assert.True(result.IsSuccess);
-      Assert.Equal(ReservationStatus.Expired, reservation.Status);
+      Assert.Equal(ReservationStatus.Expired, reservation.ResStatus);
       Assert.Equal(expiredAt, reservation.ExpiredAt);
    }
 

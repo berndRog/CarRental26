@@ -1,4 +1,5 @@
 using CarRentalApi.Domain.Errors;
+using Microsoft.Extensions.Logging;
 namespace CarRentalApi.Domain.UseCases.Cars;
 
 public sealed class CarUcReturnFromMaintenance(
@@ -8,25 +9,24 @@ public sealed class CarUcReturnFromMaintenance(
 ) : ICarUcReturnFromMaintenance {
    
    public async Task<Result> ExecuteAsync(Guid carId, CancellationToken ct) {
-      _logger.LogInformation("CarUcReturnFromMaintenance start carId={id}", carId);
 
+      // fetch car from database and save it to repository
       var car = await _repository.FindByIdAsync(carId, ct);
       if (car is null) {
-         _logger.LogWarning("CarUcReturnFromMaintenance rejected carId={id} errorCode={code}",
-            carId, CarErrors.NotFound.Code);
+         _logger.LogWarning("CarUcReturnFromMaintenance rejected, carId={id} not found", carId);
          return Result.Failure(CarErrors.NotFound);
       }
 
+      // domain operation
       var result = car.ReturnFromMaintenance();
       if (result.IsFailure) {
          _logger.LogWarning("CarUcReturnFromMaintenance rejected carId={id} errorCode={code}",
             carId, result.Error!.Code);
          return result;
       }
-
-      await _unitOfWork.SaveAllChangesAsync("Car returned from maintenance", ct);
-
-      _logger.LogDebug("CarUcReturnFromMaintenance done carId={id}", carId);
+      
+      // save changes to database
+      await _unitOfWork.SaveAllChangesAsync("Car returned from maintenance", ct); 
       return Result.Success();
    }
 }

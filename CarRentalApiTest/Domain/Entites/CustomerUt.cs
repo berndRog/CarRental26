@@ -1,131 +1,157 @@
+using CarRentalApi.Domain.Entities;
 using CarRentalApi.Domain.Errors;
-using CarRentalApi.Domain.Utils;
+using CarRentalApi.Domain.ValueObjects;
+
 namespace CarRentalApiTest.Domain.Entities;
 
-public sealed class CustomerUt {
-   // Creation via TestSeed
+public class CustomerTests {
+
+   private readonly TestSeed _seed = new();
+
    [Fact]
-   public void Customer_from_TestSeed_is_valid() {
+   public void Create_WithValidDataAndAddress_ShouldSucceed() {
       // Arrange
-      var seed = new TestSeed();
+      var address = Address.Create("Teststr. 1", "12345", "TestCity").GetValueOrThrow();
 
       // Act
-      var customer = seed.Customer1;
-
-      // Assert
-      Assert.NotNull(customer);
-      Assert.Equal(seed.Customer1Id.ToGuid(), customer.Id);
-      Assert.Equal("Erika", customer.FirstName);
-      Assert.Equal("Mustermann", customer.LastName);
-      Assert.Equal("e.mustermann@t-line.de", customer.Email);
-   }
-
-   /*
-   [Fact]
-   public void ChangeName_updates_first_and_last_name() {
-      // Arrange
-      var seed = new TestSeed();
-      var customer = seed.Customer1;
-
-      // Act
-      var result = customer.ChangeName("Max", "Muster");
+      var result = Customer.Create(
+         "John",
+         "Doe",
+         "john.doe@example.com",
+         Guid.NewGuid().ToString(),
+         address
+      );
 
       // Assert
       Assert.True(result.IsSuccess);
-      Assert.Equal("Max", customer.FirstName);
-      Assert.Equal("Muster", customer.LastName);
-
-      // Email must remain unchanged
-      Assert.Equal("e.mustermann@t-line.de", customer.Email);
+      Assert.Equal("John", result.Value.FirstName);
+      Assert.Equal("Doe", result.Value.LastName);
+      Assert.Equal("john.doe@example.com", result.Value.Email);
+      Assert.Equal(address, result.Value.Address);
    }
 
    [Fact]
-   public void ChangeName_rejects_empty_first_name() {
-      var seed = new TestSeed();
-      var result = seed.Customer1.ChangeName("", "Muster");
-
-      Assert.True(result.IsFailure);
-      Assert.Equal(PersonErrors.FirstNameIsRequired.Code, result.Error!.Code);
-   }
-
-   [Fact]
-   public void ChangeName_rejects_empty_last_name() {
-      var seed = new TestSeed();
-      var result = seed.Customer1.ChangeName("Max", "");
-
-      Assert.True(result.IsFailure);
-      Assert.Equal(PersonErrors.LastNameIsRequired.Code, result.Error!.Code);
-   }
-   */
-   
-   [Fact]
-   public void ChangeEmail_updates_email() {
-      // Arrange
-      var seed = new TestSeed();
-      var customer = seed.Customer1;
-
+   public void Create_WithoutAddress_ShouldSucceed() {
       // Act
-      var result = customer.ChangeEmail("new@mail.de");
+      var result = Customer.Create(
+         "Max",
+         "Mustermann",
+         "m.mustermann@gmail.com"
+      );
 
       // Assert
       Assert.True(result.IsSuccess);
-      Assert.Equal("new@mail.de", customer.Email);
+      Assert.Null(result.Value.Address);
    }
 
-   [Fact]
-   public void ChangeEmail_rejects_invalid_email() {
-      // Arrange
-      var seed = new TestSeed();
-      var customer = seed.Customer1;
-
+   [Theory]
+   [InlineData("", "Mustermann", "e.mustermann@t-line.de")]
+   [InlineData("Erika", "", "e.mustermann@t-line.de")]
+   [InlineData("Erika", "Mustermann", "")]
+   public void Create_WithMissingRequiredData_ShouldFail(
+      string firstName,
+      string lastName,
+      string email
+   ) {
       // Act
-      var result = customer.ChangeEmail("");
+      var result = Customer.Create(firstName, lastName, email);
 
       // Assert
       Assert.True(result.IsFailure);
-      Assert.Equal(PersonErrors.EmailIsRequired.Code, result.Error!.Code);
    }
 
-   // ------------------------------------------------------------------
-   // Entity equality (identity-based)
-   // ------------------------------------------------------------------
-   [Fact]
-   public void Customers_with_same_Id_are_equal_even_if_properties_differ() {
-      // Arrange
-      var seed1 = new TestSeed();
-      var seed2 = new TestSeed();
-
-      var customerA = seed1.Customer1;
-      var customerB = seed2.Customer1; // same Id, separate instance
-
-      // Act + Assert
-      Assert.NotSame(customerA, customerB); // different references
-      Assert.True(customerA.Equals(customerB)); // same identity
-      Assert.Equal(customerA.GetHashCode(), customerB.GetHashCode());
-   }
-
-   [Fact]
-   public void Customers_with_different_Id_are_not_equal() {
-      // Arrange
-      var seed = new TestSeed();
-      var customerA = seed.Customer1;
-      var customerB = seed.Customer2;
-
-      // Act + Assert
-      Assert.False(customerA.Equals(customerB));
-   }
-
-   [Fact]
-   public void Equality_operator_compares_identity_if_overloaded() {
-      // Arrange
-      var seed1 = new TestSeed();
-      var seed2 = new TestSeed();
-
-      var a = seed1.Customer1;
-      var b = seed2.Customer1;
+   [Theory]
+   [InlineData("invalid-email")]
+   [InlineData("@example.com")]
+   [InlineData("user@")]
+   [InlineData("user@domain")]
+   public void Create_WithInvalidEmailFormat_ShouldFail(string email) {
+      // Act
+      var result = Customer.Create(
+         "Erika",
+         "Mustermann",
+         email
+      );
 
       // Assert
-      Assert.True(a == b);
-      Assert.False(a != b);
+      Assert.True(result.IsFailure);
+      Assert.Equal(PersonErrors.EmailInvalidFormat, result.Error);
+   }
+
+   [Fact]
+   public void ChangeEmail_WithValidEmail_ShouldSucceed() {
+      // Arrange
+      var customer = _seed.Customer1;
+      var newEmail = "new.email@example.com";
+
+      // Act
+      var result = customer.ChangeEmail(newEmail);
+
+      // Assert
+      Assert.True(result.IsSuccess);
+      Assert.Equal(newEmail, customer.Email);
+   }
+
+   [Theory]
+   [InlineData("")]
+   [InlineData("   ")]
+   [InlineData("invalid-email")]
+   [InlineData("@example.com")]
+   public void ChangeEmail_WithInvalidEmail_ShouldFail(string email) {
+      // Arrange
+      var originalEmail = _seed.Customer1.Email;
+      var customer = _seed.Customer1;
+
+      // Act
+      var result = customer.ChangeEmail(email);
+
+      // Assert
+      Assert.True(result.IsFailure);
+      Assert.Equal(originalEmail, customer.Email); // Unchanged
+   }
+
+   [Fact]
+   public void Equals_WithSameId_ShouldBeTrue() {
+      // Arrange
+      var customer1 = _seed.Customer1;
+      var customer2 = Customer.Create(
+         "Different",
+         "Name",
+         "different@email.com",
+         _seed.Customer1Id
+      ).GetValueOrThrow();
+
+      // Act & Assert
+      Assert.Equal(customer1, customer2); // Same ID
+      Assert.Equal(customer1.GetHashCode(), customer2.GetHashCode());
+   }
+
+   [Fact]
+   public void Equals_WithDifferentId_ShouldBeFalse() {
+      // Arrange
+      var customer1 = _seed.Customer1;
+      var customer2 = _seed.Customer2;
+
+      // Act & Assert
+      Assert.NotEqual(customer1, customer2); // Different ID
+   }
+
+   [Fact]
+   public void TestSeed_AllCustomers_ShouldBeValid() {
+      // Assert
+      Assert.Equal("Erika", _seed.Customer1.FirstName);
+      Assert.Equal(_seed.Address1, _seed.Customer1.Address);
+
+      Assert.Equal("Max", _seed.Customer2.FirstName);
+      Assert.Null(_seed.Customer2.Address);
+
+      Assert.Equal("Arne", _seed.Customer3.FirstName);
+      Assert.Equal(_seed.Address2, _seed.Customer3.Address);
+
+      Assert.Equal("Benno", _seed.Customer4.FirstName);
+      Assert.Null(_seed.Customer4.Address);
+
+      Assert.Equal("Chrisitine", _seed.Customer5.FirstName);
+      Assert.Equal(_seed.Address3, _seed.Customer5.Address);
    }
 }

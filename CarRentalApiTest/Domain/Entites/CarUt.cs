@@ -1,6 +1,7 @@
 using CarRentalApi.Domain.Enums;
 using CarRentalApi.Domain.Errors;
 using CarRentalApi.Domain.Utils;
+
 namespace CarRentalApiTest.Domain.Entities;
 
 public sealed class CarUt {
@@ -16,16 +17,131 @@ public sealed class CarUt {
       // Assert
       Assert.NotNull(car);
       Assert.Equal(seed.Car1Id.ToGuid(), car.Id);
-      Assert.Equal(CarCategory.Economy, car.Category);
+      Assert.Equal(CarCategory.Economy, car.CarCategory);
       Assert.Equal("VW", car.Manufacturer);
       Assert.Equal("Polo", car.Model);
       Assert.Equal("ECO-001", car.LicensePlate);
-      Assert.Equal(CarStatus.Available, car.Status);
+      Assert.Equal(CarStatus.Available, car.CarStatus);
    }
 
    // ------------------------------------------------------------------
-   // Status machine - valid transitions
+   // Car.Create() - valid cases
    // ------------------------------------------------------------------
+
+   [Fact]
+   public void Create_returns_valid_car_with_correct_properties() {
+      // Arrange & Act
+      var result = CarRentalApi.Domain.Entities.Car.Create(
+         CarCategory.Compact,
+         "BMW",
+         "3 Series",
+         "COM-123"
+      );
+
+      // Assert
+      Assert.True(result.IsSuccess);
+      Assert.NotNull(result.Value);
+      Assert.Equal(CarCategory.Compact, result.Value.CarCategory);
+      Assert.Equal("BMW", result.Value.Manufacturer);
+      Assert.Equal("3 Series", result.Value.Model);
+      Assert.Equal("COM-123", result.Value.LicensePlate);
+      Assert.Equal(CarStatus.Available, result.Value.CarStatus);
+   }
+
+   // ------------------------------------------------------------------
+   // LicensePlate validation
+   // ------------------------------------------------------------------
+
+   [Fact]
+   public void Create_rejects_empty_license_plate() {
+      // Arrange & Act
+      var result = CarRentalApi.Domain.Entities.Car.Create(
+         CarCategory.Economy,
+         "VW",
+         "Polo",
+         ""
+      );
+
+      // Assert
+      Assert.True(result.IsFailure);
+      Assert.Equal(CarErrors.LicensePlateIsRequired.Code, result.Error!.Code);
+   }
+
+   [Fact]
+   public void Create_rejects_whitespace_license_plate() {
+      // Arrange & Act
+      var result = CarRentalApi.Domain.Entities.Car.Create(
+         CarCategory.Economy,
+         "VW",
+         "Polo",
+         "   "
+      );
+
+      // Assert
+      Assert.True(result.IsFailure);
+      Assert.Equal(CarErrors.LicensePlateIsRequired.Code, result.Error!.Code);
+   }
+
+   [Fact]
+   public void Create_rejects_invalid_license_plate_format() {
+      // Arrange & Act
+      var result = CarRentalApi.Domain.Entities.Car.Create(
+         CarCategory.Economy,
+         "VW",
+         "Polo",
+         "eco-001" // lowercase not allowed
+      );
+
+      // Assert
+      Assert.True(result.IsFailure);
+      Assert.Equal(CarErrors.InvalidLicensePlateFormat.Code, result.Error!.Code);
+   }
+
+   [Theory]
+   [InlineData("ECO-001")]
+   [InlineData("M-AB-1234")]
+   [InlineData("B-XX-999")]
+   [InlineData("ABC-12")]
+   [InlineData("A-1")]
+   [InlineData("XXX-9999")]
+   public void Create_accepts_various_valid_license_plate_formats(string licensePlate) {
+      // Arrange & Act
+      var result = CarRentalApi.Domain.Entities.Car.Create(
+         CarCategory.Economy,
+         "VW",
+         "Polo",
+         licensePlate
+      );
+
+      // Assert
+      Assert.True(result.IsSuccess);
+      Assert.Equal(licensePlate, result.Value.LicensePlate);
+   }
+
+   [Theory]
+   [InlineData("eco-001")]      // lowercase
+   [InlineData("ECO_001")]      // underscore
+   [InlineData("ECO 001")]      // space
+   [InlineData("ECO.001")]      // dot
+   [InlineData("ÄCO-001")]      // umlaut
+   public void Create_rejects_invalid_license_plate_formats(string licensePlate) {
+      // Arrange & Act
+      var result = CarRentalApi.Domain.Entities.Car.Create(
+         CarCategory.Economy,
+         "VW",
+         "Polo",
+         licensePlate
+      );
+
+      // Assert
+      Assert.True(result.IsFailure);
+      Assert.Equal(CarErrors.InvalidLicensePlateFormat.Code, result.Error!.Code);
+   }
+
+   // ------------------------------------------------------------------
+   // CarStatus machine - valid transitions
+   // ------------------------------------------------------------------
+
    [Fact]
    public void MarkAsRented_changes_status_from_Available_to_Rented() {
       // Arrange
@@ -37,7 +153,7 @@ public sealed class CarUt {
 
       // Assert
       Assert.True(result.IsSuccess);
-      Assert.Equal(CarStatus.Rented, car.Status);
+      Assert.Equal(CarStatus.Rented, car.CarStatus);
    }
 
    [Fact]
@@ -52,7 +168,7 @@ public sealed class CarUt {
 
       // Assert
       Assert.True(result.IsSuccess);
-      Assert.Equal(CarStatus.Available, car.Status);
+      Assert.Equal(CarStatus.Available, car.CarStatus);
    }
 
    [Fact]
@@ -66,7 +182,7 @@ public sealed class CarUt {
 
       // Assert
       Assert.True(result.IsSuccess);
-      Assert.Equal(CarStatus.Maintenance, car.Status);
+      Assert.Equal(CarStatus.Maintenance, car.CarStatus);
    }
 
    [Fact]
@@ -81,12 +197,13 @@ public sealed class CarUt {
 
       // Assert
       Assert.True(result.IsSuccess);
-      Assert.Equal(CarStatus.Available, car.Status);
+      Assert.Equal(CarStatus.Available, car.CarStatus);
    }
 
    // ------------------------------------------------------------------
-   // Status machine - invalid transitions
+   // CarStatus machine - invalid transitions
    // ------------------------------------------------------------------
+
    [Fact]
    public void MarkAsRented_rejects_when_not_Available() {
       // Arrange
@@ -100,7 +217,7 @@ public sealed class CarUt {
       // Assert
       Assert.True(result.IsFailure);
       Assert.Equal(CarErrors.CarNotAvailable.Code, result.Error!.Code);
-      Assert.Equal(CarStatus.Maintenance, car.Status);
+      Assert.Equal(CarStatus.Maintenance, car.CarStatus);
    }
 
    [Fact]
@@ -115,7 +232,7 @@ public sealed class CarUt {
       // Assert
       Assert.True(result.IsFailure);
       Assert.Equal(CarErrors.InvalidStatusTransition.Code, result.Error!.Code);
-      Assert.Equal(CarStatus.Available, car.Status);
+      Assert.Equal(CarStatus.Available, car.CarStatus);
    }
 
    [Fact]
@@ -131,7 +248,7 @@ public sealed class CarUt {
       // Assert
       Assert.True(result.IsFailure);
       Assert.Equal(CarErrors.InvalidStatusTransition.Code, result.Error!.Code);
-      Assert.Equal(CarStatus.Rented, car.Status);
+      Assert.Equal(CarStatus.Rented, car.CarStatus);
    }
 
    [Fact]
@@ -146,7 +263,7 @@ public sealed class CarUt {
       // Assert
       Assert.True(result.IsFailure);
       Assert.Equal(CarErrors.InvalidStatusTransition.Code, result.Error!.Code);
-      Assert.Equal(CarStatus.Available, car.Status);
+      Assert.Equal(CarStatus.Available, car.CarStatus);
    }
 
    // ------------------------------------------------------------------
@@ -161,14 +278,14 @@ public sealed class CarUt {
 
       // Move into a different state first (Maintenance)
       Assert.True(car.SendToMaintenance().IsSuccess);
-      Assert.Equal(CarStatus.Maintenance, car.Status);
+      Assert.Equal(CarStatus.Maintenance, car.CarStatus);
 
       // Act
       var result = car.Retire();
 
       // Assert
       Assert.True(result.IsSuccess);
-      Assert.Equal(CarStatus.Retired, car.Status);
+      Assert.Equal(CarStatus.Retired, car.CarStatus);
    }
 
    [Fact]
@@ -178,14 +295,14 @@ public sealed class CarUt {
       var car = seed.Car1;
 
       Assert.True(car.Retire().IsSuccess);
-      Assert.Equal(CarStatus.Retired, car.Status);
+      Assert.Equal(CarStatus.Retired, car.CarStatus);
 
       // Act
       var result = car.Retire();
 
       // Assert
       Assert.True(result.IsSuccess);
-      Assert.Equal(CarStatus.Retired, car.Status);
+      Assert.Equal(CarStatus.Retired, car.CarStatus);
    }
 
    [Fact]
@@ -195,7 +312,7 @@ public sealed class CarUt {
       var car = seed.Car1;
 
       Assert.True(car.Retire().IsSuccess);
-      Assert.Equal(CarStatus.Retired, car.Status);
+      Assert.Equal(CarStatus.Retired, car.CarStatus);
 
       // Act
       var r1 = car.MarkAsRented();
@@ -214,7 +331,7 @@ public sealed class CarUt {
       Assert.Equal(CarErrors.InvalidStatusTransition.Code, r3.Error!.Code);
       Assert.Equal(CarErrors.InvalidStatusTransition.Code, r4.Error!.Code);
 
-      Assert.Equal(CarStatus.Retired, car.Status);
+      Assert.Equal(CarStatus.Retired, car.CarStatus);
    }
 
    // ------------------------------------------------------------------

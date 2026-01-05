@@ -11,9 +11,17 @@ public class CarRentalDbContextFactory : IDesignTimeDbContextFactory<CarRentalDb
          .AddJsonFile("appsettings.json", optional: false)
          .AddJsonFile("appsettings.Development.json", optional: true)
          .Build();
-      var connectionString = configuration.GetConnectionString("CarRentalApi");
+
+      var projectDir = Directory.GetCurrentDirectory();
+      if (string.IsNullOrEmpty(projectDir))
+         throw new InvalidOperationException("Could not determine current directory");
+      var dbFile = configuration.GetConnectionString("CarRentalApi");
+      if(string.IsNullOrEmpty(dbFile)) 
+         throw new Exception("ConnectionString for <CarRentalApi> not found in appSettings.json");
+      var dbPath = Path.Combine(projectDir, dbFile);
+      var connectionString = $"Data Source={dbPath}";
       
-      Console.WriteLine("---> Using SQLite connection string: " + connectionString);
+      Console.WriteLine("---> Using SQLite connection string: " + dbPath);
       
       var optionsBuilder = new DbContextOptionsBuilder<CarRentalDbContext>();
         

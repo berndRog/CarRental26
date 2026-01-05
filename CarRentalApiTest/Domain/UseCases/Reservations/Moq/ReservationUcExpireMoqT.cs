@@ -89,10 +89,10 @@ public sealed class ReservationUcExpireMoqT {
       Assert.True(result.IsSuccess);
       Assert.Equal(2, result.Value);
 
-      Assert.Equal(ReservationStatus.Expired, r1.Status);
+      Assert.Equal(ReservationStatus.Expired, r1.ResStatus);
       Assert.Equal(_clock.UtcNow, r1.ExpiredAt);
 
-      Assert.Equal(ReservationStatus.Expired, r2.Status);
+      Assert.Equal(ReservationStatus.Expired, r2.ResStatus);
       Assert.Equal(_clock.UtcNow, r2.ExpiredAt);
 
       _repo.VerifyAll();
@@ -124,7 +124,7 @@ public sealed class ReservationUcExpireMoqT {
 
       var confirmResult = confirmed.Confirm(_clock.UtcNow); 
       Assert.True(confirmResult.IsSuccess);
-      Assert.Equal(ReservationStatus.Confirmed, confirmed.Status);
+      Assert.Equal(ReservationStatus.Confirmed, confirmed.ResStatus);
 
       var drafts = new List<Reservation> { draft, confirmed };
 
@@ -148,11 +148,11 @@ public sealed class ReservationUcExpireMoqT {
       Assert.True(result.IsSuccess);
       Assert.Equal(1, result.Value);
 
-      Assert.Equal(ReservationStatus.Expired, draft.Status);
+      Assert.Equal(ReservationStatus.Expired, draft.ResStatus);
       Assert.Equal(_clock.UtcNow, draft.ExpiredAt);
 
       // Still confirmed
-      Assert.Equal(ReservationStatus.Confirmed, confirmed.Status);
+      Assert.Equal(ReservationStatus.Confirmed, confirmed.ResStatus);
 
       _repo.VerifyAll();
       _uow.VerifyAll();

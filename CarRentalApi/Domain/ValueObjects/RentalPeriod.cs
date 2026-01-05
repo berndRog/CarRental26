@@ -1,10 +1,16 @@
 using CarRentalApi.Domain.Errors;
 namespace CarRentalApi.Domain.ValueObjects;
 
-public sealed record class RentalPeriod(
-   DateTimeOffset Start, 
-   DateTimeOffset End
-) {
+public sealed record class RentalPeriod {
+   
+   public DateTimeOffset Start { get; init; }
+   public DateTimeOffset End { get; init; }
+   
+   private RentalPeriod(DateTimeOffset start, DateTimeOffset end) {
+      Start = start;
+      End = end;
+   }
+   
    public static Result<RentalPeriod> Create(
       DateTimeOffset start, 
       DateTimeOffset end

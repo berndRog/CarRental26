@@ -135,7 +135,7 @@ public sealed class ReservationUcCreateDraftIntT : TestBase, IAsyncLifetime {
       Assert.Equal(Guid.Parse(id), reservation.Id);
       Assert.Equal(customerId, reservation.CustomerId);
       Assert.Equal(CarCategory.Compact, reservation.CarCategory);
-      Assert.Equal(ReservationStatus.Draft, reservation.Status);
+      Assert.Equal(ReservationStatus.Draft, reservation.ResStatus);
 
       Assert.Equal(start, reservation.Period.Start);
       Assert.Equal(end, reservation.Period.End);
@@ -150,7 +150,7 @@ public sealed class ReservationUcCreateDraftIntT : TestBase, IAsyncLifetime {
       Assert.Equal(Guid.Parse(id), fromDb!.Id);
       Assert.Equal(customerId, fromDb.CustomerId);
       Assert.Equal(CarCategory.Compact, fromDb.CarCategory);
-      Assert.Equal(ReservationStatus.Draft, fromDb.Status);
+      Assert.Equal(ReservationStatus.Draft, fromDb.ResStatus);
       Assert.Equal(start, fromDb.Period.Start);
       Assert.Equal(end, fromDb.Period.End);
       Assert.Equal(_clock.UtcNow, fromDb.CreatedAt);

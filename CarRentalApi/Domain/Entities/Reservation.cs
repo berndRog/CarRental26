@@ -6,9 +6,6 @@ namespace CarRentalApi.Domain.Entities;
 
 public sealed class Reservation: Entity<Guid> {
    // Guid Id is inherited from Entity<T>
-   
-   // Car category reserved
-   public CarCategory CarCategory { get; private set; }
 
 #if OOP_MODE   
    // With Navigation properties (object graph)
@@ -34,8 +31,11 @@ public sealed class Reservation: Entity<Guid> {
 #endif
    
    // Properties
+      
+   // Car category reserved
+   public CarCategory CarCategory { get; private set; }
    public RentalPeriod Period { get; private set; } = default!;
-   public ReservationStatus Status { get; private set; }
+   public ReservationStatus ResStatus { get; private set; }
 
    public DateTimeOffset CreatedAt { get; private set; }
    public DateTimeOffset? ConfirmedAt { get; private set; }
@@ -58,7 +58,7 @@ public sealed class Reservation: Entity<Guid> {
       CarCategory = carCategory;
       Period = period;
 
-      Status = ReservationStatus.Draft;
+      ResStatus = ReservationStatus.Draft;
       CreatedAt = createdAt;
    }
 
@@ -90,12 +90,12 @@ public sealed class Reservation: Entity<Guid> {
    }
 
    // ---------- Domain Behavior (Result-based) ----------
-   public Result ChangePeriod(DateTimeOffset newStart, DateTimeOffset newEnd) {
+   public Result ChangePeriod(DateTimeOffset start, DateTimeOffset end) {
       // Only draft reservations can be modified.
-      if (Status != ReservationStatus.Draft)
+      if (ResStatus != ReservationStatus.Draft)
          return Result.Failure(ReservationErrors.InvalidStatusTransition);
 
-      var periodResult = RentalPeriod.Create(newStart, newEnd);
+      var periodResult = RentalPeriod.Create(start, end);
 
       if (periodResult.IsFailure) {
          // Ensure the compiler sees: error is not null here
@@ -113,42 +113,43 @@ public sealed class Reservation: Entity<Guid> {
 
    public Result Confirm(DateTimeOffset confirmedAt) {
       // Only draft reservations can be confirmed.
-      if (Status != ReservationStatus.Draft)
+      if (ResStatus != ReservationStatus.Draft)
          return Result.Failure(ReservationErrors.InvalidStatusTransition);
 
       // Domain consistency: confirmation cannot happen before creation.
       if (confirmedAt < CreatedAt)
          return Result.Failure(ReservationErrors.InvalidTimestamp);
 
-      Status = ReservationStatus.Confirmed;
+      ResStatus = ReservationStatus.Confirmed;
       ConfirmedAt = confirmedAt;
       return Result.Success();
    }
 
    public Result Cancel(DateTimeOffset cancelledAt) {
       // Only draft or confirmed reservations can be cancelled.
-      if (Status is not (ReservationStatus.Draft or ReservationStatus.Confirmed))
+      if (ResStatus is not 
+          (ReservationStatus.Draft or ReservationStatus.Confirmed))
          return Result.Failure(ReservationErrors.InvalidStatusTransition);
 
       // Domain consistency: cancellation cannot happen before creation.
       if (cancelledAt < CreatedAt)
          return Result.Failure(ReservationErrors.InvalidTimestamp);
 
-      Status = ReservationStatus.Cancelled;
+      ResStatus = ReservationStatus.Cancelled;
       CancelledAt = cancelledAt;
       return Result.Success();
    }
 
    public Result Expire(DateTimeOffset expiredAt) {
       // Only draft reservations can expire.
-      if (Status != ReservationStatus.Draft)
+      if (ResStatus != ReservationStatus.Draft)
          return Result.Failure(ReservationErrors.InvalidStatusTransition);
 
       // Domain consistency: expiration cannot happen before creation.
       if (expiredAt < CreatedAt)
          return Result.Failure(ReservationErrors.InvalidTimestamp);
 
-      Status = ReservationStatus.Expired;
+      ResStatus = ReservationStatus.Expired;
       ExpiredAt = expiredAt;
       return Result.Success();
    }

@@ -24,7 +24,7 @@ public sealed class ReservationUcCreateDraft(
       );
 
       // Use-case rule:
-      // Customers may only create _repository in the future (start must be > now).
+      // Customers may only create reservation in the future (start must be > now).
       var now = _clock.UtcNow;
       if (start <= now)
          return Result<Reservation>.Failure(ReservationErrors.StartDateInPast);

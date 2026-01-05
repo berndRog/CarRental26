@@ -92,7 +92,7 @@ public sealed class CarUcSendToMaintenanceIntT : TestBase, IAsyncLifetime {
       var reloaded = await _repository.FindByIdAsync(id, CancellationToken.None);
 
       Assert.NotNull(reloaded);
-      Assert.Equal(CarStatus.Maintenance, reloaded!.Status);
+      Assert.Equal(CarStatus.Maintenance, reloaded!.CarStatus);
    }
 
    [Fact]
@@ -110,7 +110,7 @@ public sealed class CarUcSendToMaintenanceIntT : TestBase, IAsyncLifetime {
       _unitOfWork.ClearChangeTracker();
       var reloaded = await _repository.FindByIdAsync(id, CancellationToken.None);
       Assert.NotNull(reloaded);
-      Assert.Equal(CarStatus.Retired, reloaded!.Status);
+      Assert.Equal(CarStatus.Retired, reloaded!.CarStatus);
    }
 
    [Fact]
